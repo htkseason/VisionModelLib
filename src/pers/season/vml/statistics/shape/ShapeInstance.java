@@ -1,4 +1,4 @@
-package priv.season.vml.statistics.shape;
+package pers.season.vml.statistics.shape;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -12,7 +12,7 @@ public class ShapeInstance extends ShapeModel {
 	}
 
 	public ShapeInstance(double scale, double theta, double transx, double transy) {
-		Z = Mat.zeros(ShapeModel.Z_SIZE, 1, CvType.CV_64F);
+		Z = Mat.zeros(ShapeModel.Z_SIZE, 1, CvType.CV_32F);
 		Z.put(0, 0, 1);
 		Mat X = ShapeModel.getXfromZ(Z);
 		Core.normalize(X, X, -scale / 2, scale / 2, Core.NORM_MINMAX);
@@ -38,7 +38,7 @@ public class ShapeInstance extends ShapeModel {
 	}
 
 	public Mat getZ() {
-		return Z;
+		return Z.clone();
 	}
 
 	public Mat getZe4() {
@@ -56,7 +56,7 @@ public class ShapeInstance extends ShapeModel {
 	}
 
 	public void printTo(Mat dst) {
-		printTo(dst, getX());
+		printTo(Z, dst);
 	}
 
 }

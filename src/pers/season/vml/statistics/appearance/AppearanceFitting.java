@@ -1,11 +1,15 @@
-package priv.season.vml.statistics.appearance;
+package pers.season.vml.statistics.appearance;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
-import priv.season.vml.statistics.shape.ShapeModel;
-import priv.season.vml.statistics.texture.TextureModel;
+import pers.season.vml.statistics.shape.ShapeModel;
+import pers.season.vml.statistics.texture.TextureModel;
 
 public class AppearanceFitting extends AppearanceInstance {
 
@@ -17,23 +21,26 @@ public class AppearanceFitting extends AppearanceInstance {
 	}
 
 	public Mat getGradient() {
+		return getGradient(0.01, 0.50);
+	}
+
+	public Mat getGradient(double rigidDescentScale, double nonRigidDescentScale) {
 
 		Mat cost_U = new Mat();
 		Mat cost = getCost();
+
 		for (int i = 0; i < Z_SIZE; i++) {
 			double gap = 0;
 
+			double size = Math.sqrt(Z.get(0, 0)[0] * Z.get(0, 0)[0] + Z.get(1, 0)[0] * Z.get(1, 0)[0])
+					/ ShapeModel.getScalePerPixel();
+			double k = (Math.random() > 0.5 ? 1 : -1);
 			if (i < 2)
-				gap = (Math.random() > 0.5 ? 1 : -1) * 50;
+				gap = k * ShapeModel.getScalePerPixel() * (size * rigidDescentScale);
 			else if (i < 4)
-				gap = (Math.random() > 0.5 ? 1 : -1) * 50;
+				gap = k * ShapeModel.getTransPerPixel() * (size * rigidDescentScale);
 			else
-				gap = (Math.random() > 0.5 ? 1 : -1) * e.get(i - 4, 0)[0] * 0.50;
-
-			// gaus kernal?
-			// double sigma =1;
-			// gap =
-			// 100*(1/(sigma*Math.sqrt(2*Math.PI)))*Math.exp(-(gap*gap)/(2*sigma));
+				gap = k * e.get(i - 4, 0)[0] * nonRigidDescentScale;
 
 			Z.put(i, 0, Z.get(i, 0)[0] + gap);
 			Mat temp_cost = getCost();
@@ -49,7 +56,6 @@ public class AppearanceFitting extends AppearanceInstance {
 		Core.gemm(cost_U.t(), cost_U, 1, new Mat(), 0, result);
 		Core.invert(result, result);
 		Core.gemm(result, cost_U.t(), 1, new Mat(), 0, result);
-
 		Core.gemm(result, cost, 1, new Mat(), 0, result);
 
 		return result;
@@ -71,6 +77,7 @@ public class AppearanceFitting extends AppearanceInstance {
 				TextureModel.getNormFace(pic, ShapeModel.getXfromZ(X.rowRange(0, ShapeModel.Z_SIZE))).reshape(1,
 						TextureModel.X_SIZE),
 				cost);
+		
 
 		return cost;
 	}

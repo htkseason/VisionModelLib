@@ -1,4 +1,4 @@
-package priv.season.vml.statistics.shape;
+package pers.season.vml.statistics.shape;
 
 import javax.swing.JFrame;
 
@@ -7,10 +7,11 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import priv.season.vml.util.ImUtils;
-import priv.season.vml.util.MuctData;
+import pers.season.vml.util.ImUtils;
+import pers.season.vml.util.MuctData;
 
 public class ShapeModel {
 
@@ -18,12 +19,16 @@ public class ShapeModel {
 
 	public static int X_SIZE, Z_SIZE;
 
+	protected static double transPerPixel, scalePerPixel;
+
 	public static void init(String dataPath, String V_name, String e_name) {
 		V = ImUtils.loadMat(dataPath + V_name);
 		e = ImUtils.loadMat(dataPath + e_name);
 		X_SIZE = V.rows();
 		Z_SIZE = V.cols();
-
+		transPerPixel = calcTransPerPixel();
+		scalePerPixel = calcScalePerPixel();
+		System.out.println("ShapeModel inited. " + X_SIZE + " --> " + Z_SIZE);
 	}
 
 	public static void clamp(Mat Z, double maxBias) {
@@ -34,7 +39,8 @@ public class ShapeModel {
 		}
 	}
 
-	public static void printTo(Mat dst, Mat X) {
+	public static void printTo(Mat Z, Mat dst) {
+		Mat X = ShapeModel.getXfromZ(Z);
 		for (int i = 0; i < X.rows() / 2; i++) {
 			Imgproc.circle(dst, new Point(X.get(i * 2, 0)[0], X.get(i * 2 + 1, 0)[0]), 2, new Scalar(255));
 		}
@@ -59,7 +65,7 @@ public class ShapeModel {
 	}
 
 	public static Mat getZe4fromZ(Mat Z) {
-		Mat result = Mat.zeros(Z.rows() - 4, 1, CvType.CV_64F);
+		Mat result = Mat.zeros(Z.rows() - 4, 1, CvType.CV_32F);
 		double a = Z.get(0, 0)[0];
 		double b = Z.get(1, 0)[0];
 		double scale = Math.sqrt(a * a + b * b);
@@ -73,4 +79,33 @@ public class ShapeModel {
 		return getZe4fromZ(getZfromX(X));
 	}
 
+
+	public static double getTransPerPixel() {
+		return transPerPixel;
+	}
+
+	public static double getScalePerPixel() {
+		return scalePerPixel;
+	}
+
+	protected static double calcTransPerPixel() {
+		Mat Z = Mat.zeros(ShapeModel.Z_SIZE, 1, CvType.CV_32F);
+		Z.put(0, 0, 1);
+		Mat X = ShapeModel.getXfromZ(Z);
+		for (int i = 0; i < X.rows() / 2; i++) {
+			X.put(i * 2, 0, X.get(i * 2, 0)[0] + 10);
+			X.put(i * 2 + 1, 0, X.get(i * 2 + 1, 0)[0] + 10);
+		}
+		Z = ShapeModel.getZfromX(X);
+		return (Z.get(3, 0)[0] + Z.get(2, 0)[0]) / 2 / 10;
+	}
+
+	protected static double calcScalePerPixel() {
+		Mat Z = Mat.zeros(ShapeModel.Z_SIZE, 1, CvType.CV_32F);
+		Z.put(0, 0, 1);
+		Mat X = ShapeModel.getXfromZ(Z);
+		Core.normalize(X, X, -10 / 2, 10 / 2, Core.NORM_MINMAX);
+		Z = ShapeModel.getZfromX(X);
+		return Z.get(0, 0)[0] / 10;
+	}
 }

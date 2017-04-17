@@ -1,10 +1,4 @@
-package priv.season.vml.statistics.texture;
-
-import java.io.File;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+package pers.season.vml.statistics.texture;
 
 import javax.swing.JFrame;
 
@@ -12,16 +6,10 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
-import org.opencv.core.MatOfFloat6;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.imgproc.Subdiv2D;
-
-import priv.season.vml.statistics.shape.ShapeModel;
-import priv.season.vml.util.ImUtils;
-import priv.season.vml.util.MuctData;
+import pers.season.vml.util.ImUtils;
+import pers.season.vml.util.MuctData;
 
 public class TextureModelTrain {
 
@@ -34,9 +22,9 @@ public class TextureModelTrain {
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.1 * Math.signum(seq[s + 1] - seq[s])) {
 					textureModel.Z.put(feature, 0, TextureModel.e.get(feature, 0)[0] * i);
-					Mat canvas = Mat.zeros(100, 100, CvType.CV_64F);
+					Mat canvas = Mat.zeros(TextureModel.resolutionY, TextureModel.resolutionX, CvType.CV_32F);
 					textureModel.printTo(canvas);
-					ImUtils.imshow(win, canvas, 3);
+					ImUtils.imshow(win, canvas, 5);
 					System.gc();
 
 				}
@@ -47,15 +35,16 @@ public class TextureModelTrain {
 
 	public static void train(String outputDir, double fractionRemain, int resolution_x, int resolution_y,
 			boolean saveTransitionalData) {
-
+		System.out.println("training texture model ...");
+		
 		// calculate mean shape
 		Mat shapes = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++)
 			shapes.push_back(MuctData.getPtsMat(i).t());
 		shapes = shapes.t();
 
-		Mat mx = Mat.zeros(1, shapes.cols(), CvType.CV_64F);
-		Mat my = Mat.zeros(1, shapes.cols(), CvType.CV_64F);
+		Mat mx = Mat.zeros(1, shapes.cols(), CvType.CV_32F);
+		Mat my = Mat.zeros(1, shapes.cols(), CvType.CV_32F);
 		for (int i = 0; i < shapes.rows() / 2; i++) {
 			Core.add(mx, shapes.row(i * 2), mx);
 			Core.add(my, shapes.row(i * 2 + 1), my);
@@ -68,12 +57,12 @@ public class TextureModelTrain {
 		}
 
 		Mat meanShape = new Mat();
-		Core.gemm(shapes, Mat.ones(shapes.cols(), 1, CvType.CV_64F), 1, new Mat(), 0, meanShape);
+		Core.gemm(shapes, Mat.ones(shapes.cols(), 1, CvType.CV_32F), 1, new Mat(), 0, meanShape);
 		Core.divide(meanShape, new Scalar(shapes.cols()), meanShape);
 
 		// normalize meanShape
-		Mat meanShape_x = new Mat(meanShape.rows() / 2, 1, CvType.CV_64F);
-		Mat meanShape_y = new Mat(meanShape.rows() / 2, 1, CvType.CV_64F);
+		Mat meanShape_x = new Mat(meanShape.rows() / 2, 1, CvType.CV_32F);
+		Mat meanShape_y = new Mat(meanShape.rows() / 2, 1, CvType.CV_32F);
 		for (int i = 0; i < meanShape.rows() / 2; i++) {
 			meanShape_x.put(i, 0, meanShape.get(i * 2, 0)[0]);
 			meanShape_y.put(i, 0, meanShape.get(i * 2 + 1, 0)[0]);
@@ -90,7 +79,7 @@ public class TextureModelTrain {
 
 		// create triangle delaunay
 		int[][] delaunay = TextureModel.createDelaunay(new Rect(0, 0, resolution_x, resolution_y), meanShape);
-		Mat delaunayMat = new Mat(delaunay.length, 3, CvType.CV_64F);
+		Mat delaunayMat = new Mat(delaunay.length, 3, CvType.CV_32F);
 		for (int i = 0; i < delaunay.length; i++) {
 			for (int j = 0; j < 3; j++) {
 				delaunayMat.put(i, j, delaunay[i][j]);
@@ -99,15 +88,16 @@ public class TextureModelTrain {
 		ImUtils.saveMat(delaunayMat, outputDir + "delaunay");
 		System.out.println("triangle delaunay created");
 		System.out.println("triangleCounts : " + delaunay.length);
-		ImUtils.showDelaunay(meanShape, delaunay, resolution_x, resolution_y);
+		if (saveTransitionalData)
+			ImUtils.showDelaunay(meanShape, delaunay, resolution_x, resolution_y);
 		
 
 		// affine faces
 		Mat X = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++) {
 			Mat pic = MuctData.getGrayJpg(i);
-			pic.convertTo(pic, CvType.CV_64F);
-			Mat normFace = Mat.zeros(resolution_y, resolution_x, CvType.CV_64F);
+			pic.convertTo(pic, CvType.CV_32F);
+			Mat normFace = Mat.zeros(resolution_y, resolution_x, CvType.CV_32F);
 			TextureModel.AfflineTexture(pic, MuctData.getPtsMat(i), normFace, meanShape, delaunay);
 			normFace = normFace.reshape(1, 1);
 			X.push_back(normFace);
@@ -124,12 +114,13 @@ public class TextureModelTrain {
 
 		// print a sample. (clone makes matrix continuous, which created by
 		// push_back is not continuous)
-		ImUtils.imshow(new JFrame(), X.col(0).clone().reshape(1, resolution_y), 3);
+		if (saveTransitionalData)
+			ImUtils.imshow(new JFrame(), X.col(0).clone().reshape(1, resolution_y), 3);
 
 		// apply svd (strongly recommend using matlab-svds function to do this
 		// process)
 		Mat meanX = new Mat();
-		Core.gemm(X, Mat.ones(X.cols(), 1, CvType.CV_64F), 1, new Mat(), 0, meanX);
+		Core.gemm(X, Mat.ones(X.cols(), 1, CvType.CV_32F), 1, new Mat(), 0, meanX);
 		Core.divide(meanX, new Scalar(X.cols()), meanX);
 		ImUtils.saveMat(meanX, outputDir + "X_mean");
 
@@ -165,8 +156,8 @@ public class TextureModelTrain {
 		Core.gemm(U.t(), X, 1, new Mat(), 0, Z);
 		if (saveTransitionalData)
 			ImUtils.saveMat(Z, outputDir + "Z");
-		Mat z_mean = new Mat(Z.rows(), 1, CvType.CV_64F);
-		Mat z_stddev = new Mat(Z.rows(), 1, CvType.CV_64F);
+		Mat z_mean = new Mat(Z.rows(), 1, CvType.CV_32F);
+		Mat z_stddev = new Mat(Z.rows(), 1, CvType.CV_32F);
 		for (int i = 0; i < Z.rows(); i++) {
 			MatOfDouble tmean = new MatOfDouble();
 			MatOfDouble tstddev = new MatOfDouble();

@@ -1,4 +1,4 @@
-package priv.season.vml.statistics.texture;
+package pers.season.vml.statistics.texture;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -7,7 +7,7 @@ public class TextureInstance extends TextureModel {
 	public Mat Z;
 
 	public TextureInstance() {
-		Z = Mat.zeros(TextureModel.Z_SIZE, 1, CvType.CV_64F);
+		Z = Mat.zeros(TextureModel.Z_SIZE, 1, CvType.CV_32F);
 	}
 
 	public TextureInstance(Mat pic, Mat pts) {
@@ -15,7 +15,7 @@ public class TextureInstance extends TextureModel {
 	}
 
 	public Mat getZ() {
-		return Z;
+		return Z.clone();
 	}
 
 	public Mat getX() {
@@ -23,12 +23,14 @@ public class TextureInstance extends TextureModel {
 	}
 
 	public void printTo(Mat dst) {
-		printTo(dst, getX(), stdShape);
+		printTo(dst, TextureModel.stdShape);
+	}
+	
+	public void printTo(Mat dst, Mat shape) {
+		printTo(Z, dst, shape);
 	}
 
-	public void printTo(Mat dst, Mat pts) {
-		printTo(dst, getX(), pts);
-	}
+
 
 	public void clamp(double maxBias) {
 		clamp(Z, maxBias);

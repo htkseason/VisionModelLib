@@ -1,4 +1,4 @@
-package priv.season.vml.statistics.appearance;
+package pers.season.vml.statistics.appearance;
 
 import javax.swing.JFrame;
 
@@ -9,12 +9,12 @@ import org.opencv.core.MatOfDouble;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import priv.season.vml.statistics.shape.ShapeInstance;
-import priv.season.vml.statistics.shape.ShapeModel;
-import priv.season.vml.statistics.texture.TextureInstance;
-import priv.season.vml.statistics.texture.TextureModel;
-import priv.season.vml.util.ImUtils;
-import priv.season.vml.util.MuctData;
+import pers.season.vml.statistics.shape.ShapeInstance;
+import pers.season.vml.statistics.shape.ShapeModel;
+import pers.season.vml.statistics.texture.TextureInstance;
+import pers.season.vml.statistics.texture.TextureModel;
+import pers.season.vml.util.ImUtils;
+import pers.season.vml.util.MuctData;
 
 public class AppearanceModelTrain {
 
@@ -29,7 +29,7 @@ public class AppearanceModelTrain {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.25
 						* Math.signum(seq[s + 1] - seq[s])) {
 					app.Z.put(feature, 0, AppearanceModel.e.get(feature, 0)[0] * i);
-					Mat canvas = Mat.zeros(500, 500, CvType.CV_64F);
+					Mat canvas = Mat.zeros(500, 500, CvType.CV_32F);
 					app.printTo(canvas);
 					ImUtils.imshow(win, canvas, 1);
 					System.gc();
@@ -41,14 +41,15 @@ public class AppearanceModelTrain {
 	}
 
 	public static void train(String outputDir, double fractionRemain, boolean saveTransitionalData) {
-
+		System.out.println("training appearnce model ...");
+		
 		// calculate shape/texture project(Z)
 		System.out.println("calculating shape/texutre Z ... ");
 		Mat textureZ = new Mat();
 		Mat shapeZ = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++) {
 			Mat pic = MuctData.getGrayJpg(i);
-			pic.convertTo(pic, CvType.CV_64F);
+			pic.convertTo(pic, CvType.CV_32F);
 			shapeZ.push_back(ShapeModel.getZe4fromX(MuctData.getPtsMat(i)).t());
 			textureZ.push_back(TextureModel.getZfromX(TextureModel.getNormFace(pic, MuctData.getPtsMat(i))).t());
 			if (i % 100 == 0 || i == MuctData.getSize() - 1)
@@ -65,14 +66,14 @@ public class AppearanceModelTrain {
 
 		// evaluate shape weight
 		double shapeWeight = Core.norm(textureZ) / Core.norm(shapeZ);
-		Mat shapeWeightMat = new Mat(1, 1, CvType.CV_64F);
+		Mat shapeWeightMat = new Mat(1, 1, CvType.CV_32F);
 		shapeWeightMat.put(0, 0, shapeWeight);
 		ImUtils.saveMat(shapeWeightMat, outputDir + "shapeWeight");
 		System.out.println("suggested shape weight = " + shapeWeight);
 		Core.multiply(shapeZ, new Scalar(shapeWeight), shapeZ);
 
 		// apply svd to shape+texture vector
-		System.out.println("generating appearance vector");
+		System.out.println("generating appearance vector ...");
 		Mat appX = new Mat();
 		appX.push_back(shapeZ);
 		appX.push_back(textureZ);
@@ -108,8 +109,8 @@ public class AppearanceModelTrain {
 		Mat appZ = new Mat();
 		Core.gemm(U.t(), appX, 1, new Mat(), 0, appZ);
 		ImUtils.saveMat(appZ, outputDir + "Z");
-		Mat z_mean = new Mat(appZ.rows(), 1, CvType.CV_64F);
-		Mat z_stddev = new Mat(appZ.rows(), 1, CvType.CV_64F);
+		Mat z_mean = new Mat(appZ.rows(), 1, CvType.CV_32F);
+		Mat z_stddev = new Mat(appZ.rows(), 1, CvType.CV_32F);
 		for (int i = 0; i < appZ.rows(); i++) {
 			MatOfDouble tmean = new MatOfDouble();
 			MatOfDouble tstddev = new MatOfDouble();
@@ -117,10 +118,10 @@ public class AppearanceModelTrain {
 			z_mean.put(i, 0, tmean.get(0, 0)[0]);
 			z_stddev.put(i, 0, tstddev.get(0, 0)[0]);
 		}
-		Mat z_mean_p4 = Mat.zeros(z_mean.rows() + 4, z_mean.cols(), CvType.CV_64F);
-		Mat z_stddev_p4 = Mat.zeros(z_stddev.rows() + 4, z_stddev.cols(), CvType.CV_64F);
-		z_mean_p4.put(0, 0, new double[] { -1, -1, -1, -1 });
-		z_stddev_p4.put(0, 0, new double[] { -1, -1, -1, -1 });
+		Mat z_mean_p4 = Mat.zeros(z_mean.rows() + 4, z_mean.cols(), CvType.CV_32F);
+		Mat z_stddev_p4 = Mat.zeros(z_stddev.rows() + 4, z_stddev.cols(), CvType.CV_32F);
+		z_mean_p4.put(0, 0, new float[] { -1, -1, -1, -1 });
+		z_stddev_p4.put(0, 0, new float[] { -1, -1, -1, -1 });
 		z_mean.copyTo(z_mean_p4.rowRange(4, z_mean_p4.rows()));
 		z_stddev.copyTo(z_stddev_p4.rowRange(4, z_stddev_p4.rows()));
 		ImUtils.saveMat(z_stddev, outputDir + "Z_e");

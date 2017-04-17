@@ -1,31 +1,17 @@
-package priv.season.vml.util;
+package pers.season.vml.util;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.JFrame;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
-import org.opencv.core.MatOfFloat6;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
+
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.imgproc.Subdiv2D;
 
 public class MuctData {
 	static int[][] symmetryPoints = { { 0, 14 }, { 1, 13 }, { 2, 12 }, { 3, 11 }, { 4, 10 }, { 5, 9 }, { 6, 8 },
@@ -36,7 +22,7 @@ public class MuctData {
 
 
 	private static List<String> fileNameLst;
-	private static List<double[]> ptsDataLst;
+	private static List<float[]> ptsDataLst;
 	private static int sampleSize;
 
 	private static String jpgPath;
@@ -53,7 +39,7 @@ public class MuctData {
 		MuctData.jpgPath = jpgPath;
 		try {
 			fileNameLst = new LinkedList<String>();
-			ptsDataLst = new LinkedList<double[]>();
+			ptsDataLst = new LinkedList<float[]>();
 			BufferedReader in = new BufferedReader(new FileReader(ptsFile));
 			in.readLine();// skip title
 			String line;
@@ -64,11 +50,11 @@ public class MuctData {
 
 				// 76 minus 8+15 points, ignoring last 8 points on eyes and 15
 				// points bound the face
-				double[] ptsData = new double[ptsCounts * 2];
+				float[] ptsData = new float[ptsCounts * 2];
 				String[] lineseq = line.split(",");
 
 				for (int i = 0; i < ptsData.length; i++) {
-					ptsData[i] = Double.parseDouble(lineseq[i + 2 + (ignoreFaceBoundary ? 15 * 2 : 0)]);
+					ptsData[i] = Float.parseFloat(lineseq[i + 2 + (ignoreFaceBoundary ? 15 * 2 : 0)]);
 				}
 				fileNameLst.add(lineseq[0]);
 				ptsDataLst.add(ptsData);
@@ -103,16 +89,17 @@ public class MuctData {
 			Core.flip(result, result, 1);
 		} else
 			result = Imgcodecs.imread(jpgPath + "/" + fileNameLst.get(index) + ".jpg", Imgcodecs.IMREAD_GRAYSCALE);
+		
 		return result;
 	}
 
-	public static double[] getPts(int index) {
+	public static float[] getPts(int index) {
 		return ptsDataLst.get(index);
 	}
 
 	public static Mat getPtsMat(int index) {
-		double[] data = ptsDataLst.get(index);
-		Mat result = new Mat(data.length, 1, CvType.CV_64F);
+		float[] data = ptsDataLst.get(index);
+		Mat result = new Mat(data.length, 1, CvType.CV_32F);
 		result.put(0, 0, data);
 		return result;
 	}
@@ -128,8 +115,8 @@ public class MuctData {
 	private static void projectMirrorShape() {
 		int srcSampleCounts = ptsDataLst.size();
 		for (int i = 0; i < srcSampleCounts; i++) {
-			double[] src = ptsDataLst.get(i);
-			double[] dst = Arrays.copyOf(src, src.length);
+			float[] src = ptsDataLst.get(i);
+			float[] dst = Arrays.copyOf(src, src.length);
 			for (int ii = 0; ii < ptsCounts; ii++)
 				dst[ii * 2] = 480 - dst[ii * 2];
 
@@ -141,7 +128,7 @@ public class MuctData {
 				int sp0 = sp[0] - (ignoreFaceBoundary ? 15 : 0);
 				int sp1 = sp[1] - (ignoreFaceBoundary ? 15 : 0);
 
-				double temp;
+				float temp;
 				temp = dst[sp0 * 2];
 				dst[sp0 * 2] = dst[sp1 * 2];
 				dst[sp1 * 2] = temp;

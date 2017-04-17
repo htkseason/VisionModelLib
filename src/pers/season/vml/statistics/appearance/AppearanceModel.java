@@ -1,12 +1,13 @@
-package priv.season.vml.statistics.appearance;
+package pers.season.vml.statistics.appearance;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
-import priv.season.vml.statistics.shape.ShapeModel;
-import priv.season.vml.util.ImUtils;
+import pers.season.vml.statistics.shape.ShapeModel;
+import pers.season.vml.statistics.texture.TextureModel;
+import pers.season.vml.util.ImUtils;
 
 public class AppearanceModel {
 
@@ -21,6 +22,8 @@ public class AppearanceModel {
 		shapeWeight = ImUtils.loadMat(dataPath + shapeWeight_name).get(0, 0)[0];
 		Z_SIZE = U.cols() + 4;
 		X_SIZE = U.rows() + 4;
+
+		System.out.println("AppearanceModel inited. " + X_SIZE + " --> " + Z_SIZE);
 	}
 
 	public static void clamp(Mat Z, double maxBias) {
@@ -46,13 +49,23 @@ public class AppearanceModel {
 
 	// X = trans(4) + shape_Xe4 + texture_X
 	public static Mat getXfromZ(Mat Z) {
-		Mat X = new Mat(X_SIZE, 1, CvType.CV_64F);
+		Mat X = new Mat(X_SIZE, 1, CvType.CV_32F);
 		Z.rowRange(0, 4).copyTo(X.rowRange(0, 4));
 		Mat X_non_rigid = X.rowRange(4, X.rows());
 		Mat X_shape_e4 = X.rowRange(4, ShapeModel.Z_SIZE);
 		Core.gemm(U, Z.rowRange(4, Z.rows()), 1, new Mat(), 0, X_non_rigid);
 		Core.divide(X_shape_e4, new Scalar(shapeWeight), X_shape_e4);
 		return X;
+	}
+
+	public static void printTo(Mat Z, Mat dst) {
+		Mat X = getXfromZ(Z);
+		double scale = ShapeModel.getScale(X);
+		Core.multiply(X.rowRange(4, ShapeModel.Z_SIZE), new Scalar(scale), X.rowRange(4, ShapeModel.Z_SIZE));
+		Mat shapeZ = X.rowRange(0, ShapeModel.Z_SIZE);
+		Mat textureZ = X.rowRange(ShapeModel.Z_SIZE, X.rows());
+		TextureModel.printTo(textureZ, dst, ShapeModel.getXfromZ(shapeZ));
+		// ShapeModel.printTo(dst, ShapeModel.getXfromZ(shapeZ));
 	}
 
 }

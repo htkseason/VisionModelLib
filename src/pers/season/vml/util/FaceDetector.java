@@ -1,4 +1,4 @@
-package priv.season.vml.util;
+package pers.season.vml.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,8 +12,8 @@ import org.opencv.objdetect.CascadeClassifier;
 
 public class FaceDetector {
 	private static CascadeClassifier faceDetector;
-	static {
-		faceDetector = new CascadeClassifier("lbpcascade_frontalface.xml");
+	public static void init (String file){
+		faceDetector = new CascadeClassifier(file);
 	}
 	public static Rect searchFace(Mat img) {
 		MatOfRect faceResult = new MatOfRect();

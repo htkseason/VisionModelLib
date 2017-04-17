@@ -1,4 +1,4 @@
-package priv.season.vml.statistics.shape;
+package pers.season.vml.statistics.shape;
 
 import javax.swing.JFrame;
 
@@ -8,8 +8,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Scalar;
 
-import priv.season.vml.util.ImUtils;
-import priv.season.vml.util.MuctData;
+import pers.season.vml.util.ImUtils;
+import pers.season.vml.util.MuctData;
 
 public final class ShapeModelTrain {
 
@@ -22,7 +22,7 @@ public final class ShapeModelTrain {
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.1 * Math.signum(seq[s + 1] - seq[s])) {
 					shapeModel.Z.put(feature, 0, ShapeModel.e.get(feature, 0)[0] * i * shapeModel.getScale());
-					Mat canvas = Mat.zeros(500, 500, CvType.CV_64F);
+					Mat canvas = Mat.zeros(500, 500, CvType.CV_32F);
 					shapeModel.printTo(canvas);
 					ImUtils.imshow(win, canvas, 1);
 					try {
@@ -57,8 +57,8 @@ public final class ShapeModelTrain {
 		orgShapes.copyTo(shapes);
 
 		// move to center
-		Mat mx = Mat.zeros(1, sampleCounts, CvType.CV_64F);
-		Mat my = Mat.zeros(1, sampleCounts, CvType.CV_64F);
+		Mat mx = Mat.zeros(1, sampleCounts, CvType.CV_32F);
+		Mat my = Mat.zeros(1, sampleCounts, CvType.CV_32F);
 		for (int i = 0; i < pointCounts; i++) {
 			Core.add(mx, shapes.row(i * 2), mx);
 			Core.add(my, shapes.row(i * 2 + 1), my);
@@ -71,16 +71,16 @@ public final class ShapeModelTrain {
 		}
 
 		// procrustes analysis to mean shape
-		Mat preMeanShape = Mat.zeros(pointCounts * 2, 1, CvType.CV_64F);
+		Mat preMeanShape = Mat.zeros(pointCounts * 2, 1, CvType.CV_32F);
 		Mat meanShape = new Mat();
 		int iter = 0;
 		while (true) {
 			iter++;
-			Core.gemm(shapes, Mat.ones(sampleCounts, 1, CvType.CV_64F), 1, new Mat(), 0, meanShape);
+			Core.gemm(shapes, Mat.ones(sampleCounts, 1, CvType.CV_32F), 1, new Mat(), 0, meanShape);
 			Core.divide(meanShape, new Scalar(sampleCounts), meanShape);
 			Core.normalize(meanShape, meanShape);
 			System.out.println("after iter = " + iter + ", procrusters cost = " + Core.norm(preMeanShape, meanShape));
-			if (Core.norm(preMeanShape, meanShape) < 1e-10) {
+			if (Core.norm(preMeanShape, meanShape) < 1e-5 || iter > 20) {
 				System.out.println(
 						"end with iter = " + iter + ", procrusters cost = " + Core.norm(preMeanShape, meanShape));
 				break;
@@ -97,7 +97,7 @@ public final class ShapeModelTrain {
 			}
 		}
 
-		Core.gemm(shapes, Mat.ones(sampleCounts, 1, CvType.CV_64F), 1, new Mat(), 0, meanShape);
+		Core.gemm(shapes, Mat.ones(sampleCounts, 1, CvType.CV_32F), 1, new Mat(), 0, meanShape);
 		Core.divide(meanShape, new Scalar(sampleCounts), meanShape);
 		if (saveTransitionalData) {
 			ImUtils.saveMat(shapes, outputDir + "shapes_align");
@@ -105,7 +105,7 @@ public final class ShapeModelTrain {
 		}
 
 		// calculate rigid matrix
-		Mat rigidMat = new Mat(2 * pointCounts, 4, CvType.CV_64F);
+		Mat rigidMat = new Mat(2 * pointCounts, 4, CvType.CV_32F);
 		for (int i = 0; i < pointCounts; i++) {
 			rigidMat.put(2 * i, 0, meanShape.get(2 * i, 0)[0]);
 			rigidMat.put(2 * i + 1, 0, meanShape.get(2 * i + 1, 0)[0]);
@@ -159,7 +159,7 @@ public final class ShapeModelTrain {
 		System.out.println("vectors remain : " + U.cols() + "/" + S.rows());
 
 		// put rigid-mat and svd_U together
-		Mat V = Mat.zeros(pointCounts * 2, 4 + U.cols(), CvType.CV_64F);
+		Mat V = Mat.zeros(pointCounts * 2, 4 + U.cols(), CvType.CV_32F);
 		rigidMat.copyTo(V.colRange(0, 4));
 		U.copyTo(V.colRange(4, V.cols()));
 		ImUtils.saveMat(V, outputDir + "V");
@@ -180,8 +180,8 @@ public final class ShapeModelTrain {
 			ImUtils.saveMat(Z, outputDir + "Z");
 
 		// calculate mean/stddev of Z
-		Mat z_mean = new Mat(Z.rows(), 1, CvType.CV_64F);
-		Mat z_stddev = new Mat(Z.rows(), 1, CvType.CV_64F);
+		Mat z_mean = new Mat(Z.rows(), 1, CvType.CV_32F);
+		Mat z_stddev = new Mat(Z.rows(), 1, CvType.CV_32F);
 		for (int i = 0; i < Z.rows(); i++) {
 			MatOfDouble tmean = new MatOfDouble();
 			MatOfDouble tstddev = new MatOfDouble();
@@ -232,7 +232,7 @@ public final class ShapeModelTrain {
 		}
 		a /= d;
 		b /= d;
-		Mat result = new Mat(2, 2, CvType.CV_64F);
+		Mat result = new Mat(2, 2, CvType.CV_32F);
 		result.put(0, 0, a, -b, b, a);
 		return result;
 	}

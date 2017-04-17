@@ -1,9 +1,10 @@
-package priv.season.vml.util;
+package pers.season.vml.util;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -54,6 +55,7 @@ public class ImUtils {
 
 	public static BufferedImage encodeImage(Mat image, Size resize) {
 		Mat tImg;
+		image.convertTo(image, CvType.CV_64F);
 		if (resize != null) {
 			tImg = new Mat(resize, image.type());
 			Imgproc.resize(image, tImg, resize);
@@ -63,6 +65,7 @@ public class ImUtils {
 		Imgcodecs.imencode(".bmp", tImg, matOfByte);
 
 		byte[] byteArray = matOfByte.toArray();
+
 		BufferedImage bufImage = null;
 		try {
 			InputStream in = new ByteArrayInputStream(byteArray);
@@ -82,10 +85,10 @@ public class ImUtils {
 			String line;
 			while ((line = in.readLine()) != null) {
 				String[] lineseq = line.split(",");
-				Mat result_line = new Mat(1, lineseq.length, CvType.CV_64F);
-				double[] data = new double[lineseq.length];
+				Mat result_line = new Mat(1, lineseq.length, CvType.CV_32F);
+				float[] data = new float[lineseq.length];
 				for (int i = 0; i < data.length; i++)
-					data[i] = Double.parseDouble(lineseq[i]);
+					data[i] = Float.parseFloat(lineseq[i]);
 				result_line.put(0, 0, data);
 				result.push_back(result_line);
 			}
@@ -101,12 +104,13 @@ public class ImUtils {
 
 	public static void saveMatAsInt(Mat mat, String file) {
 		try {
+			new File(file).getParentFile().mkdirs();
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 
 			// out.write(mat.rows() + "," + mat.cols() + "," + mat.type()+"\n");
 
 			for (int i = 0; i < mat.rows(); i++) {
-				double[] data = new double[mat.cols() * mat.channels()];
+				float[] data = new float[mat.cols() * mat.channels()];
 				mat.get(i, 0, data);
 
 				for (int ii = 0; ii < data.length; ii++) {
@@ -127,12 +131,13 @@ public class ImUtils {
 
 	public static void saveMat(Mat mat, String file) {
 		try {
+			new File(file).getParentFile().mkdirs();
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 
 			// out.write(mat.rows() + "," + mat.cols() + "," + mat.type()+"\n");
 
 			for (int i = 0; i < mat.rows(); i++) {
-				double[] data = new double[mat.cols() * mat.channels()];
+				float[] data = new float[mat.cols() * mat.channels()];
 				mat.get(i, 0, data);
 
 				for (int ii = 0; ii < data.length; ii++) {
@@ -153,14 +158,18 @@ public class ImUtils {
 	}
 
 	public static void sharpen(Mat src, Mat dst) {
-		Mat kernel = new Mat(3, 3, CvType.CV_64F);
+		Mat kernel = new Mat(3, 3, CvType.CV_32F);
 		kernel.put(0, 0, -1, -1, -1, -1, 9, -1, -1, -1, -1);
 		Imgproc.filter2D(src, dst, -1, kernel);
 
 	}
 
 	public static void showDelaunay(Mat pts, int[][] delaunay, int width, int height) {
-		Mat delaunay_show = Mat.zeros(height, width, CvType.CV_64F);
+		showDelaunay(new JFrame(), pts, delaunay, width, height);
+	}
+
+	public static void showDelaunay(JFrame win, Mat pts, int[][] delaunay, int width, int height) {
+		Mat delaunay_show = Mat.zeros(height, width, CvType.CV_32F);
 		for (int i = 0; i < delaunay.length; i++) {
 			int p1c = delaunay[i][0];
 			int p2c = delaunay[i][1];
@@ -175,7 +184,7 @@ public class ImUtils {
 			Imgproc.line(delaunay_show, new Point(p3x, p3y), new Point(p2x, p2y), new Scalar(255));
 			Imgproc.line(delaunay_show, new Point(p1x, p1y), new Point(p3x, p3y), new Scalar(255));
 		}
-		ImUtils.imshow(delaunay_show);
+		ImUtils.imshow(win, delaunay_show, 1);
 	}
 
 	private static long timingRecord = 0;

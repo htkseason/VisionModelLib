@@ -1,4 +1,4 @@
-package priv.season.vml.util;
+package pers.season.vml.util;
 
 import java.io.Externalizable;
 import java.io.IOException;
