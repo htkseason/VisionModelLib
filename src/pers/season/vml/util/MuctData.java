@@ -17,25 +17,27 @@ public class MuctData {
 	static int[][] symmetryPoints = { { 0, 14 }, { 1, 13 }, { 2, 12 }, { 3, 11 }, { 4, 10 }, { 5, 9 }, { 6, 8 },
 			{ 15, 21 }, { 16, 22 }, { 17, 23 }, { 18, 24 }, { 19, 25 }, { 20, 26 }, { 27, 32 }, { 28, 33 }, { 29, 34 },
 			{ 30, 35 }, { 31, 36 }, { 37, 45 }, { 38, 44 }, { 39, 43 }, { 40, 42 }, { 46, 47 }, { 48, 54 }, { 49, 53 },
-			{ 50, 52 }, { 55, 59 }, { 56, 58 }, { 60, 62 }, { 65, 63 } };
-	
+			{ 50, 52 }, { 55, 59 }, { 56, 58 }, { 60, 62 }, { 65, 63 }, { 68, 72 }, { 69, 73 }, { 70, 74 },
+			{ 71, 75 } };
 
-
+	private static int[] ignorePoints;
+	public final static int[] default_ignore = { 68, 69, 70, 71, 72, 73, 74, 75 };
+	public final static int[] futher_ignore = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 68, 69, 70, 71, 72,
+			73, 74, 75 };
 	private static List<String> fileNameLst;
 	private static List<float[]> ptsDataLst;
 	private static int sampleSize;
 
 	private static String jpgPath;
-	private static boolean ignoreFaceBoundary;
+
 	private static int ptsCounts;
 
-	public static void init() {
-		init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", false);
-	}
 
-	public static void init(String jpgPath, String ptsFile, boolean ignoreFaceBoundary) {
-		MuctData.ignoreFaceBoundary = ignoreFaceBoundary;
-		MuctData.ptsCounts = 76 - 8 - (ignoreFaceBoundary ? 15 : 0);
+
+	public static void init(String jpgPath, String ptsFile, int[] ignore) {
+		Arrays.sort(ignore);
+		MuctData.ignorePoints = ignore;
+		MuctData.ptsCounts = 76 - ignore.length;
 		MuctData.jpgPath = jpgPath;
 		try {
 			fileNameLst = new LinkedList<String>();
@@ -53,8 +55,10 @@ public class MuctData {
 				float[] ptsData = new float[ptsCounts * 2];
 				String[] lineseq = line.split(",");
 
-				for (int i = 0; i < ptsData.length; i++) {
-					ptsData[i] = Float.parseFloat(lineseq[i + 2 + (ignoreFaceBoundary ? 15 * 2 : 0)]);
+				for (int i = 0; i < 76 * 2; i++) {
+					if (Arrays.binarySearch(ignore, i / 2) < 0)
+						ptsData[(i / 2 - (-Arrays.binarySearch(ignore, i / 2) - 1)) * 2 + i % 2] = Float
+								.parseFloat(lineseq[i + 2]);
 				}
 				fileNameLst.add(lineseq[0]);
 				ptsDataLst.add(ptsData);
@@ -89,7 +93,7 @@ public class MuctData {
 			Core.flip(result, result, 1);
 		} else
 			result = Imgcodecs.imread(jpgPath + "/" + fileNameLst.get(index) + ".jpg", Imgcodecs.IMREAD_GRAYSCALE);
-		
+
 		return result;
 	}
 
@@ -122,11 +126,18 @@ public class MuctData {
 
 			for (int ii = 0; ii < symmetryPoints.length; ii++) {
 				int[] sp = symmetryPoints[ii];
-				if (ignoreFaceBoundary && (sp[0] < 15 || sp[1] < 15)) {
+				// both ignored
+				if (Arrays.binarySearch(ignorePoints, sp[0]) >= 0 && (Arrays.binarySearch(ignorePoints, sp[1]) >= 0))
 					continue;
+				// single one ignored, error
+				if ((Arrays.binarySearch(ignorePoints, sp[0]) < 0) ^ (Arrays.binarySearch(ignorePoints, sp[1]) < 0)) {
+					System.err.println("shape symmetry & ignoring unpaired.");
+					return;
 				}
-				int sp0 = sp[0] - (ignoreFaceBoundary ? 15 : 0);
-				int sp1 = sp[1] - (ignoreFaceBoundary ? 15 : 0);
+
+				// both not ignored
+				int sp0 = sp[0] - (-Arrays.binarySearch(ignorePoints, sp[0]) - 1);
+				int sp1 = sp[1] - (-Arrays.binarySearch(ignorePoints, sp[1]) - 1);
 
 				float temp;
 				temp = dst[sp0 * 2];
