@@ -11,12 +11,15 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import pers.season.vml.statistics.appearance.AppearanceFitting;
 import pers.season.vml.statistics.appearance.AppearanceModel;
 import pers.season.vml.statistics.appearance.AppearanceModelTrain;
+import pers.season.vml.statistics.regressor.LearningParams;
+import pers.season.vml.statistics.regressor.RegressorTrain;
 import pers.season.vml.statistics.shape.ShapeInstance;
 import pers.season.vml.statistics.shape.ShapeModel;
 import pers.season.vml.statistics.shape.ShapeModelTrain;
@@ -34,25 +37,23 @@ public final class Entrance {
 	}
 
 	public static void main(String[] args) throws IOException {
-
-
+		MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.default_ignore);
+		RegressorTrain.init(100, 100);
+		Mat theta = RegressorTrain.trainLinearModel(7, new Size(41, 41), new Size(21, 21), 2, 0.2,
+				new LearningParams());
+		RegressorTrain.debug_measure(7, theta);
+		// ShapeModelTrain.train("models/shape/", 0.90,false);
 		ShapeModel.init("models/shape/", "V", "Z_e");
-		//ShapeModelTrain.visualize();
+		// ShapeModelTrain.visualize();
 
-		
 		TextureModel.init("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
-		TextureModelTrain.visualize();
-		
-		
-		AppearanceModel.init("models/appearance/", "U", "Z_e", "shapeWeight");
-		//AppearanceModelTrain.visualize();
+		// TextureModelTrain.visualize();
 
+		AppearanceModel.init("models/appearance/", "U", "Z_e", "shapeWeight");
+		// AppearanceModelTrain.visualize();
 
 		System.out.println("program ended.");
 
 	}
-
-
-
 
 }

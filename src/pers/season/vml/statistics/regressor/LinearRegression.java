@@ -61,17 +61,17 @@ public class LinearRegression {
 		return (cost_v + lambda * reg_v) / (2 * X.rows());
 	}
 
-	public Mat getGradient(int iterCount, int batchSize) {
-		
-		Mat tX = X.rowRange(iterCount % (X.rows()/batchSize)*batchSize, (iterCount % (X.rows()/batchSize)+1)*batchSize);
-		Mat tY = y.rowRange(iterCount % (X.rows()/batchSize)*batchSize, (iterCount % (X.rows()/batchSize)+1)*batchSize);
+	public Mat getGradient(int batchSize) {
+		int rndSampleCount = (int) (Math.random() * (X.rows() / batchSize));
+		Mat tX = X.rowRange(rndSampleCount * batchSize, (rndSampleCount + 1) * batchSize);
+		Mat tY = y.rowRange(rndSampleCount * batchSize, (rndSampleCount + 1) * batchSize);
 		Mat comt = new Mat();
 		Core.gemm(tX, theta, 1, new Mat(), 0, comt);
 		Core.subtract(comt, tY, comt);
 		Mat g = new Mat(theta.rows(), 1, CvType.CV_32F);
 
 		Semaphore sema = new Semaphore(0);
-		
+
 		int assignmentCounts = theta.rows() / CORE_COUNTS;
 		for (int threadIndex = 0; threadIndex < CORE_COUNTS; threadIndex++) {
 			final int curThreadIndex = threadIndex;

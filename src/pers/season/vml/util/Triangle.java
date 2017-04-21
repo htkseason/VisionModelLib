@@ -26,9 +26,9 @@ public class Triangle {
 		int minY = (int) Math.min(Math.min(y1, y2), y3) - offset;
 		minY = minY < 0 ? 0 : minY;
 		int maxX = (int) Math.max(Math.max(x1, x2), x3) + offset;
-		maxX = maxX > texture.cols() ? texture.cols() : maxX;
+		maxX = maxX >= texture.cols() ? texture.cols() - 1 : maxX;
 		int maxY = (int) Math.max(Math.max(y1, y2), y3) + offset;
-		maxY = maxY > texture.rows() ? texture.rows() : maxY;
+		maxY = maxY >= texture.rows() ? texture.rows() - 1 : maxY;
 
 		this.x1 = x1;
 		this.x2 = x2;
