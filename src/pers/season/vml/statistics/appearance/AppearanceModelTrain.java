@@ -7,8 +7,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-
 import pers.season.vml.statistics.shape.ShapeInstance;
 import pers.season.vml.statistics.shape.ShapeModel;
 import pers.season.vml.statistics.texture.TextureInstance;

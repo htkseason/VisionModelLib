@@ -1,7 +1,8 @@
 package pers.season.vml.statistics.regressor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -12,10 +13,9 @@ import org.opencv.core.Size;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.imgproc.Imgproc;
 
-import pers.season.vml.util.ImUtils;
-import pers.season.vml.util.MuctData;
-
 public class RegressorSet {
+	protected static final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
+	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
 
 	public static Mat track(Mat patches, Mat pic, Mat srcPts, Mat refShape, Size patchSize, Size searchSize) {
 
@@ -25,27 +25,40 @@ public class RegressorSet {
 		Core.add(affPic, new Scalar(1), affPic);
 		Core.log(affPic, affPic);
 		Imgproc.warpAffine(affPic, affPic, R, pic.size());
-		for (int i = 0; i < dstPts.rows() / 2; i++) {
-			double px = dstPts.get(i * 2, 0)[0];
-			double py = dstPts.get(i * 2 + 1, 0)[0];
-			Mat response = predictArea(affPic, patches.col(i), new Point(px, py), patchSize, searchSize);
-			// Imgproc.blur(response, response, new Size(5, 5), new Point(-1,
-			// -1), Core.BORDER_CONSTANT);
-			// Imgproc.GaussianBlur(r, r, new Size(7,7),1, 1,
-			// Core.BORDER_CONSTANT);
 
-			// ImUtils.imshow(win, r, 5);
-			MinMaxLocResult mmr = Core.minMaxLoc(response);
+		Semaphore sema = new Semaphore(0);
+		for (int threadIndex = 0; threadIndex < CORE_COUNTS; threadIndex++) {
+			final int curThreadIndex = threadIndex;
+			final Mat dstPtsFinal = dstPts;
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
+					for (int i = 0; i < dstPtsFinal.rows() / 2; i++) {
+						if (i % CORE_COUNTS != curThreadIndex)
+							continue;
+						double px = dstPtsFinal.get(i * 2, 0)[0];
+						double py = dstPtsFinal.get(i * 2 + 1, 0)[0];
+						Mat response = predictArea(affPic, patches.col(i), new Point(px, py), patchSize, searchSize);
 
-			dstPts.put(i * 2, 0, mmr.maxLoc.x - (int) searchSize.width / 2 - 1 + px);
-			dstPts.put(i * 2 + 1, 0, mmr.maxLoc.y - (int) searchSize.height / 2 - 1 + py);
+						MinMaxLocResult mmr = Core.minMaxLoc(response);
 
+						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - (int) searchSize.width / 2 - 1 + px);
+						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - (int) searchSize.height / 2 - 1 + py);
+					}
+					sema.release();
+				}
+			});
+		}
+		try {
+			sema.acquire(CORE_COUNTS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 		for (int i = 0; i < dstPts.rows() / 2; i++) {
 			Imgproc.circle(affPic, new Point(dstPts.get(2 * i, 0)[0], dstPts.get(2 * i + 1, 0)[0]), 2, new Scalar(255));
 		}
-		//ImUtils.imshow(affPic);
+
 		dstPts = reversePtsAffine(dstPts, R);
 		return dstPts;
 	}
@@ -77,12 +90,14 @@ public class RegressorSet {
 	}
 
 	public static Mat predictArea(Mat pic, Mat theta, Point center, Size patchSize, Size searchSize) {
-		Mat result = new Mat(searchSize, CvType.CV_32F);
+		Mat response = new Mat(searchSize, CvType.CV_32F);
 		// 21/20-->10
 		int searchHeightHalf = (int) searchSize.height / 2;
 		int searchWidthHalf = (int) searchSize.width / 2;
 		int patchHeightHalf = (int) patchSize.height / 2;
 		int patchWidthHalf = (int) patchSize.width / 2;
+		double bias = theta.get(0, 0)[0];
+		theta = theta.rowRange(1, theta.rows()).clone().reshape(1, patchHeightHalf * 2 + 1);
 		for (int y = -searchHeightHalf; y <= searchHeightHalf; y++) {
 			for (int x = -searchWidthHalf; x <= searchWidthHalf; x++) {
 				int rowStart = (int) center.y + y - patchHeightHalf;
@@ -90,25 +105,18 @@ public class RegressorSet {
 				int colStart = (int) center.x + x - patchWidthHalf;
 				int colEnd = (int) center.x + x + patchWidthHalf + 1;
 				if (rowStart < 0 || colStart < 0 || rowEnd >= pic.height() || colEnd >= pic.width()) {
-					result.put(y + searchHeightHalf, x + searchWidthHalf, Float.NaN);
-					System.out.println(x + "," + y);
+					response.put(y + searchHeightHalf, x + searchWidthHalf, Float.NaN);
 					continue;
 				}
 				Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
-				float r = predictPoint(subpic, theta);
-				result.put(y + searchHeightHalf, x + searchWidthHalf, r);
+				Mat tempMat = new Mat();
+				Core.multiply(subpic, theta, tempMat);
+				Scalar rVal = Core.sumElems(tempMat);
+				double r = rVal.val[0] + bias;
+				response.put(y + searchHeightHalf, x + searchWidthHalf, r);
 			}
 		}
-		return result;
-	}
-
-	public static float predictPoint(Mat pic, Mat theta) {
-		Mat result = new Mat();
-		pic = pic.clone().reshape(1, 1);
-		Core.gemm(pic, theta.rowRange(1, theta.rows()), 1, new Mat(), 0, result);
-		Core.add(result, new Scalar(theta.get(0, 0)[0]), result);
-		return (float) result.get(0, 0)[0];
-
+		return response;
 	}
 
 	protected static Mat calcSimi(Mat pts, Mat ref) {

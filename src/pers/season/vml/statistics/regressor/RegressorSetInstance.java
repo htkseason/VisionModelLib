@@ -15,7 +15,7 @@ public class RegressorSetInstance extends RegressorSet {
 		this.refShape = refShape.clone();
 	}
 	
-	public void init(Mat pts) {
+	public void setInitPts(Mat pts) {
 		this.curPts = pts.clone();
 	}
 
