@@ -31,9 +31,7 @@ import pers.season.vml.util.MuctData;
 
 public class RegressorTrain {
 
-	public static Mat refShape;
-
-	public static Mat trainLinearModel(int point, Size patchSize, Size searchSize, int samplingGap,
+	public static Mat trainLinearModel(Mat refShape, int point, Size patchSize, Size searchSize, int samplingGap,
 			double trainSampleProportion, LearningParams lp) {
 		Mat sample = new Mat();
 		Mat response = new Mat();
@@ -44,14 +42,14 @@ public class RegressorTrain {
 
 			Mat s = new Mat();
 			Mat r = new Mat();
-			getSample(s, r, i, point, patchSize, searchSize, samplingGap);
+			getSample(refShape, s, r, i, point, patchSize, searchSize, samplingGap);
 			sample.push_back(s);
 			response.push_back(r);
 
 			System.gc();
 		}
 		System.out.println(sample.rows() + " samples loaded");
-		
+
 		LinearRegression lr = new LinearRegression();
 		lr.setData(sample, response, 1);
 
@@ -74,20 +72,22 @@ public class RegressorTrain {
 			}
 
 		}
-		
+
 		return lr.theta;
 
 	}
 
-	public static void debug_measure(int point, Mat theta) {
+	public static void debug_measure(Mat refShape, int point, Mat theta, Size patchSize, Size searchSize) {
 		JFrame win = new JFrame();
 		// Mat resResult = new Mat();
-		Regressor reg = new Regressor(theta);
-		
+
+
 		Mat maxloc = new Mat();
 
-		for (int i = 3500; i < 4000; i++) {
-
+		for (int i = 0; i < MuctData.getSize(); i++) {
+			if (Math.random() > 0.2)
+				continue;
+			
 			Mat pic = MuctData.getGrayJpg(i);
 			pic.convertTo(pic, CvType.CV_32F);
 			Core.add(pic, new Scalar(1), pic);
@@ -95,21 +95,17 @@ public class RegressorTrain {
 			// Core.normalize(pic, pic,-1,1,Core.NORM_MINMAX);
 			int tpx = (int) MuctData.getPts(i)[point * 2];
 			int tpy = (int) MuctData.getPts(i)[point * 2 + 1];
-			Mat R = calcSimi(MuctData.getPtsMat(i), refShape);
-			R.put(0, 2, R.get(0, 2)[0] + pic.width() / 2);
-			R.put(1, 2, R.get(1, 2)[0] + pic.height() / 2);
+			Mat R = RegressorSet.getPtsAffineTrans(MuctData.getPtsMat(i), refShape, pic.width() / 2, pic.height() / 2);
 			int px = (int) Math.round((tpx * R.get(0, 0)[0] + tpy * R.get(0, 1)[0] + R.get(0, 2)[0]));
 			int py = (int) Math.round((tpx * R.get(1, 0)[0] + tpy * R.get(1, 1)[0] + R.get(1, 2)[0]));
 			Imgproc.warpAffine(pic, pic, R, pic.size());
-			
-			Mat r = reg.predictArea(pic, new Point(px, py), new Size(41, 41), new Size(61, 61));
-			
-			
-			Imgproc.blur(r, r, new Size(5, 5), new Point(-1, -1), Core.BORDER_CONSTANT);
+
+			Mat r = RegressorSet.predictArea(pic,theta, new Point(px, py), patchSize, searchSize);
+
+			//Imgproc.blur(r, r, new Size(5, 5), new Point(-1, -1), Core.BORDER_CONSTANT);
 			// Imgproc.GaussianBlur(r, r, new Size(7,7),1, 1,
 			// Core.BORDER_CONSTANT);
 
-			
 			// ImUtils.imshow(win, r, 5);
 			MinMaxLocResult mmr = Core.minMaxLoc(r);
 			Mat rmat = new Mat(1, 2, CvType.CV_32F);
@@ -125,7 +121,7 @@ public class RegressorTrain {
 		ImUtils.saveMat(theta, "e:/theta");
 	}
 
-	public static void getSample(Mat sample, Mat response, int sampleIndex, int ptsIndex, Size patchSize,
+	public static void getSample(Mat refShape, Mat sample, Mat response, int sampleIndex, int ptsIndex, Size patchSize,
 			Size searchSize, int samplingGap) {
 
 		Mat pic = MuctData.getGrayJpg(sampleIndex);
@@ -144,12 +140,13 @@ public class RegressorTrain {
 				|| tpy + searchHeightHalf + patchHeightHalf >= pic.height())
 			return;
 
-		Mat R = calcSimi(MuctData.getPtsMat(sampleIndex), refShape);
-		R.put(0, 2, R.get(0, 2)[0] + pic.width() / 2);
-		R.put(1, 2, R.get(1, 2)[0] + pic.height() / 2);
+		Mat R = RegressorSet.getPtsAffineTrans(MuctData.getPtsMat(sampleIndex), refShape, pic.width() / 2,
+				pic.height() / 2);
 		int px = (int) Math.round((tpx * R.get(0, 0)[0] + tpy * R.get(0, 1)[0] + R.get(0, 2)[0]));
 		int py = (int) Math.round((tpx * R.get(1, 0)[0] + tpy * R.get(1, 1)[0] + R.get(1, 2)[0]));
 		Imgproc.warpAffine(pic, pic, R, pic.size());
+		// Core.normalize(pic, pic, 0, 255, Core.NORM_MINMAX);
+		// ImUtils.imshow(pic);
 
 		int posSize = 2;
 		for (int y = -posSize; y <= posSize; y++) {
@@ -185,8 +182,8 @@ public class RegressorTrain {
 
 	}
 
-	public static void init(int width, int height) {
-		refShape = new Mat();
+	public static Mat getRefShape(int width, int height) {
+		Mat refShape = new Mat();
 		// calculate mean shape
 		Mat shapes = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++)
@@ -222,42 +219,7 @@ public class RegressorTrain {
 			shapeX.row(i).copyTo(refShape.row(i * 2));
 			shapeY.row(i).copyTo(refShape.row(i * 2 + 1));
 		}
-
-	}
-
-	protected static Mat calcSimi(Mat pts, Mat ref) {
-		// compute translation
-		double mx = 0, my = 0;
-		double refmx = 0, refmy = 0;
-		for (int i = 0; i < pts.rows() / 2; i++) {
-			mx += pts.get(i * 2, 0)[0];
-			my += pts.get(i * 2 + 1, 0)[0];
-			refmx += ref.get(i * 2, 0)[0];
-			refmy += ref.get(i * 2 + 1, 0)[0];
-		}
-		mx /= pts.rows() / 2;
-		my /= pts.rows() / 2;
-		refmx /= ref.rows() / 2;
-		refmy /= ref.rows() / 2;
-
-		double a = 0, b = 0, c = 0;
-		for (int i = 0; i < pts.rows() / 2; i++) {
-			double refx = ref.get(i * 2, 0)[0] - refmx, refy = ref.get(i * 2 + 1, 0)[0] - refmy;
-			double ptsx = pts.get(i * 2, 0)[0] - mx, ptsy = pts.get(i * 2 + 1, 0)[0] - my;
-			a += refx * refx + refy * refy;
-			b += refx * ptsx + refy * ptsy;
-			c += refx * ptsy - refy * ptsx;
-		}
-		b /= a;
-		c /= a;
-		double scale = Math.sqrt(b * b + c * c);
-		double theta = Math.atan2(c, b);
-		double sc = scale * Math.cos(theta);
-		double ss = scale * Math.sin(theta);
-		Mat R = new Mat(2, 3, CvType.CV_32F);
-		R.put(0, 0, new double[] { sc, -ss, mx - refmx, ss, sc, my - refmy });
-		Imgproc.invertAffineTransform(R, R);
-		return R;
+		return refShape;
 	}
 
 }

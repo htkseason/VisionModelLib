@@ -38,10 +38,11 @@ public final class Entrance {
 
 	public static void main(String[] args) throws IOException {
 		MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.default_ignore);
-		RegressorTrain.init(100, 100);
-		Mat theta = RegressorTrain.trainLinearModel(7, new Size(41, 41), new Size(21, 21), 2, 0.2,
-				new LearningParams());
-		RegressorTrain.debug_measure(7, theta);
+		Mat refShape = RegressorTrain.getRefShape(100, 100);
+		LearningParams lp = new LearningParams();
+		lp.iteration = 1000;
+		Mat theta = RegressorTrain.trainLinearModel(refShape, 7, new Size(41, 41), new Size(21, 21), 2, 0.2, lp);
+		RegressorTrain.debug_measure(refShape, 7, theta,new Size(41, 41), new Size(31, 31));
 		// ShapeModelTrain.train("models/shape/", 0.90,false);
 		ShapeModel.init("models/shape/", "V", "Z_e");
 		// ShapeModelTrain.visualize();

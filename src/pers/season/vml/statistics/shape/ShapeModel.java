@@ -32,10 +32,11 @@ public class ShapeModel {
 	}
 
 	public static void clamp(Mat Z, double maxBias) {
+		double scale = getScale(Z);
 		for (int i = 4; i < Z_SIZE; i++) {
 			double p = Z.get(i, 0)[0];
-			if (Math.abs(p) > e.get(i, 0)[0] * maxBias)
-				Z.put(i, 0, Math.signum(p) * e.get(i, 0)[0] * maxBias);
+			if (Math.abs(p) > scale * e.get(i, 0)[0] * maxBias)
+				Z.put(i, 0, Math.signum(p) * scale * e.get(i, 0)[0] * maxBias);
 		}
 	}
 
@@ -78,7 +79,6 @@ public class ShapeModel {
 	public static Mat getZe4fromX(Mat X) {
 		return getZe4fromZ(getZfromX(X));
 	}
-
 
 	public static double getTransPerPixel() {
 		return transPerPixel;

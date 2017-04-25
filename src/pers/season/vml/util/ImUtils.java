@@ -54,13 +54,10 @@ public class ImUtils {
 	}
 
 	public static BufferedImage encodeImage(Mat image, Size resize) {
-		Mat tImg;
-		image.convertTo(image, CvType.CV_64F);
-		if (resize != null) {
-			tImg = new Mat(resize, image.type());
-			Imgproc.resize(image, tImg, resize);
-		} else
-			tImg = image;
+		Mat tImg = image.clone();
+		if (resize != null)
+			Imgproc.resize(tImg, tImg, resize);
+
 		MatOfByte matOfByte = new MatOfByte();
 		Imgcodecs.imencode(".bmp", tImg, matOfByte);
 
