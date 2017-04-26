@@ -1,5 +1,5 @@
 # VisionModelLib  
-A vision model library including ShapeModel, TextureModel, AppearanceModel, PatchRegressor(under development) and training tools for them.
+A vision model library including ShapeModel, TextureModel, AppearanceModel, PatchRegressor and training tools for them.
   
 This project is library only.  
 Practical usage samples will be released in other repositories.  

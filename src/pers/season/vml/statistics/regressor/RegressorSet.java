@@ -42,10 +42,11 @@ public class RegressorSet {
 
 						MinMaxLocResult mmr = Core.minMaxLoc(response);
 
-						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - (int) searchSize.width / 2 - 1 + px);
-						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - (int) searchSize.height / 2 - 1 + py);
+						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x -  response.width() / 2 - 1 + px);
+						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 - 1 + py);
 					}
 					sema.release();
+					
 				}
 			});
 		}
@@ -55,9 +56,7 @@ public class RegressorSet {
 			e.printStackTrace();
 		}
 
-		for (int i = 0; i < dstPts.rows() / 2; i++) {
-			Imgproc.circle(affPic, new Point(dstPts.get(2 * i, 0)[0], dstPts.get(2 * i + 1, 0)[0]), 2, new Scalar(255));
-		}
+
 
 		dstPts = reversePtsAffine(dstPts, R);
 		return dstPts;
@@ -90,7 +89,7 @@ public class RegressorSet {
 	}
 
 	public static Mat predictArea(Mat pic, Mat theta, Point center, Size patchSize, Size searchSize) {
-		Mat response = new Mat(searchSize, CvType.CV_32F);
+		
 		// 21/20-->10
 		int searchHeightHalf = (int) searchSize.height / 2;
 		int searchWidthHalf = (int) searchSize.width / 2;
@@ -98,24 +97,26 @@ public class RegressorSet {
 		int patchWidthHalf = (int) patchSize.width / 2;
 		double bias = theta.get(0, 0)[0];
 		theta = theta.rowRange(1, theta.rows()).clone().reshape(1, patchHeightHalf * 2 + 1);
-		for (int y = -searchHeightHalf; y <= searchHeightHalf; y++) {
-			for (int x = -searchWidthHalf; x <= searchWidthHalf; x++) {
-				int rowStart = (int) center.y + y - patchHeightHalf;
-				int rowEnd = (int) center.y + y + patchHeightHalf + 1;
-				int colStart = (int) center.x + x - patchWidthHalf;
-				int colEnd = (int) center.x + x + patchWidthHalf + 1;
-				if (rowStart < 0 || colStart < 0 || rowEnd >= pic.height() || colEnd >= pic.width()) {
-					response.put(y + searchHeightHalf, x + searchWidthHalf, Float.NaN);
-					continue;
-				}
-				Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
-				Mat tempMat = new Mat();
-				Core.multiply(subpic, theta, tempMat);
-				Scalar rVal = Core.sumElems(tempMat);
-				double r = rVal.val[0] + bias;
-				response.put(y + searchHeightHalf, x + searchWidthHalf, r);
-			}
+		int rowStart = (int) center.y - patchHeightHalf-searchHeightHalf;
+		int rowEnd = (int) center.y  + patchHeightHalf + 1 + searchHeightHalf;
+		int colStart = (int) center.x  - patchWidthHalf - searchWidthHalf;
+		int colEnd = (int) center.x +  patchWidthHalf + 1 + searchWidthHalf;
+		if (rowStart < 0 ) {
+			rowStart = 0;
 		}
+		if ( colStart < 0) {
+			colStart = 0;
+		}
+		if (rowEnd >= pic.height() ) {
+			rowEnd = pic.height()-1;
+		}
+		if ( colEnd >= pic.width()) {
+			colEnd=pic.width()-1;
+		}
+		Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
+		Mat response = new Mat();
+		Imgproc.matchTemplate(subpic, theta, response, Imgproc.TM_CCOEFF_NORMED);
+		// TKM : OH MY GOD! HOW CAN 'MATCHTEMPLATE' BEING SOOOOOOOO FAAAAAST!! I LOVE OPENCV!
 		return response;
 	}
 

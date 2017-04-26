@@ -15,14 +15,20 @@ public class RegressorSetInstance extends RegressorSet {
 		this.refShape = refShape.clone();
 	}
 	
-	public void setInitPts(Mat pts) {
-		this.curPts = pts.clone();
-	}
+
 
 	public Mat track(Mat pic, Size searchSize) {
 		Mat dstPts = track(patches, pic, curPts, refShape, patchSize, searchSize);
 		curPts = dstPts.clone();
 		return dstPts;
+	}
+	
+	public void setCurPts(Mat pts) {
+		this.curPts = pts.clone();
+	}
+	
+	public Mat getCurPts() {
+		return curPts.clone();
 	}
 
 }
