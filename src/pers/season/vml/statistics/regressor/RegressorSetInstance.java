@@ -9,24 +9,28 @@ public class RegressorSetInstance extends RegressorSet {
 	protected Size patchSize;
 	protected Mat refShape;
 
-	public void load(Mat patches, Size patchSize, Mat refShape) {
-		this.patches = patches.clone();
-		this.patchSize = patchSize.clone();
-		this.refShape = refShape.clone();
-	}
-	
+	protected RegressorSetInstance() {
 
+	}
+
+	public static RegressorSetInstance load(Mat patches, Size patchSize, Mat refShape) {
+		RegressorSetInstance rsi = new RegressorSetInstance();
+		rsi.patches = patches.clone();
+		rsi.patchSize = patchSize.clone();
+		rsi.refShape = refShape.clone();
+		return rsi;
+	}
 
 	public Mat track(Mat pic, Size searchSize) {
 		Mat dstPts = track(patches, pic, curPts, refShape, patchSize, searchSize);
 		curPts = dstPts.clone();
 		return dstPts;
 	}
-	
+
 	public void setCurPts(Mat pts) {
 		this.curPts = pts.clone();
 	}
-	
+
 	public Mat getCurPts() {
 		return curPts.clone();
 	}
