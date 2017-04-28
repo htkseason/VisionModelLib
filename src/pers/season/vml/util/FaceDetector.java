@@ -9,16 +9,22 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.objdetect.CascadeClassifier;
 
-
 public class FaceDetector {
-	private static CascadeClassifier faceDetector;
-	public static void init (String file){
-		faceDetector = new CascadeClassifier(file);
+	protected CascadeClassifier faceDetector;
+
+	protected FaceDetector() {
+		
 	}
-	public static Rect searchFace(Mat img) {
+	public static FaceDetector load(String file) {
+		FaceDetector fd = new FaceDetector();
+		fd.faceDetector = new CascadeClassifier(file);
+		return fd;
+	}
+
+	public Rect searchFace(Mat img) {
 		MatOfRect faceResult = new MatOfRect();
 		faceDetector.detectMultiScale(img, faceResult);
-		
+
 		List<Rect> faceRects = Arrays.asList(faceResult.toArray());
 		if (faceRects.size() < 1) {
 			return null;
