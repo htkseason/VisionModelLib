@@ -16,19 +16,23 @@ import pers.season.vml.util.MuctData;
 
 public class AppearanceModelTrain {
 
-	public static void visualize() {
+	public static void visualize(AppearanceModel am) {
 		JFrame win = new JFrame();
-		AppearanceInstance app = new AppearanceInstance(new ShapeInstance(300, 0, 250, 250).getZ(),
-				new TextureInstance().getZ());
-		for (int feature = 4; feature < AppearanceModel.Z_SIZE; feature++) {
+		ShapeInstance shape = new ShapeInstance(am.sm);
+		shape.setFromParams(300, 0, 250, 250);
+		TextureInstance texture = new TextureInstance(am.tm);
+
+		AppearanceInstance app = new AppearanceInstance(am);
+		app.setFromModels(shape.getZ(), texture.getZ());
+		for (int feature = 4; feature < am.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.25
 						* Math.signum(seq[s + 1] - seq[s])) {
-					app.Z.put(feature, 0, AppearanceModel.e.get(feature, 0)[0] * i);
+					app.Z.put(feature, 0, am.e.get(feature, 0)[0] * i);
 					Mat canvas = Mat.zeros(500, 500, CvType.CV_32F);
-					app.printTo(canvas);
+					app.printTo(canvas, true);
 					ImUtils.imshow(win, canvas, 1);
 					System.gc();
 
@@ -38,9 +42,10 @@ public class AppearanceModelTrain {
 		}
 	}
 
-	public static void train(String outputDir, double fractionRemain, boolean saveTransitionalData) {
+	public static void train(ShapeModel sm, TextureModel tm, String outputDir, double shapeWeightRatio,
+			double fractionRemain, boolean saveTransitionalData) {
 		System.out.println("training appearnce model ...");
-		
+
 		// calculate shape/texture project(Z)
 		System.out.println("calculating shape/texutre Z ... ");
 		Mat textureZ = new Mat();
@@ -48,8 +53,8 @@ public class AppearanceModelTrain {
 		for (int i = 0; i < MuctData.getSize(); i++) {
 			Mat pic = MuctData.getGrayJpg(i);
 			pic.convertTo(pic, CvType.CV_32F);
-			shapeZ.push_back(ShapeModel.getZe4fromX(MuctData.getPtsMat(i)).t());
-			textureZ.push_back(TextureModel.getZfromX(TextureModel.getNormFace(pic, MuctData.getPtsMat(i))).t());
+			shapeZ.push_back(sm.getZe4fromX(MuctData.getPtsMat(i)).t());
+			textureZ.push_back(tm.getZfromX(tm.getNormFace(pic, MuctData.getPtsMat(i))).t());
 			if (i % 100 == 0 || i == MuctData.getSize() - 1)
 				System.out.println(i + "/" + MuctData.getSize());
 			System.gc();
@@ -63,7 +68,7 @@ public class AppearanceModelTrain {
 		}
 
 		// evaluate shape weight
-		double shapeWeight = Core.norm(textureZ) / Core.norm(shapeZ);
+		double shapeWeight = shapeWeightRatio * Core.norm(textureZ) / Core.norm(shapeZ);
 		Mat shapeWeightMat = new Mat(1, 1, CvType.CV_32F);
 		shapeWeightMat.put(0, 0, shapeWeight);
 		ImUtils.saveMat(shapeWeightMat, outputDir + "shapeWeight");

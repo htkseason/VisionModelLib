@@ -13,16 +13,16 @@ import pers.season.vml.util.MuctData;
 
 public class TextureModelTrain {
 
-	public static void visualize() {
+	public static void visualize(TextureModel tm) {
 		JFrame win = new JFrame();
-		TextureInstance textureModel = new TextureInstance();
-		for (int feature = 0; feature < TextureModel.Z_SIZE; feature++) {
+		TextureInstance textureModel = new TextureInstance(tm);
+		for (int feature = 0; feature < tm.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.1 * Math.signum(seq[s + 1] - seq[s])) {
-					textureModel.Z.put(feature, 0, TextureModel.e.get(feature, 0)[0] * i);
-					Mat canvas = Mat.zeros(TextureModel.resolutionY, TextureModel.resolutionX, CvType.CV_32F);
+					textureModel.Z.put(feature, 0, tm.e.get(feature, 0)[0] * i);
+					Mat canvas = Mat.zeros(tm.resolutionY, tm.resolutionX, CvType.CV_32F);
 					textureModel.printTo(canvas);
 					ImUtils.imshow(win, canvas, 5);
 					System.gc();
@@ -31,12 +31,11 @@ public class TextureModelTrain {
 			}
 		}
 	}
-	
 
 	public static void train(String outputDir, double fractionRemain, int resolution_x, int resolution_y,
 			boolean saveTransitionalData) {
 		System.out.println("training texture model ...");
-		
+
 		// calculate mean shape
 		Mat shapes = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++)
@@ -90,7 +89,6 @@ public class TextureModelTrain {
 		System.out.println("triangleCounts : " + delaunay.length);
 		if (saveTransitionalData)
 			ImUtils.showDelaunay(meanShape, delaunay, resolution_x, resolution_y);
-		
 
 		// affine faces
 		Mat X = new Mat();
@@ -172,6 +170,5 @@ public class TextureModelTrain {
 		System.out.println("done!");
 
 	}
-
 
 }

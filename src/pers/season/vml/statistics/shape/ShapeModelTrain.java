@@ -13,15 +13,16 @@ import pers.season.vml.util.MuctData;
 
 public final class ShapeModelTrain {
 
-	public static void visualize() {
+	public static void visualize(ShapeModel sm) {
 		JFrame win = new JFrame();
-		ShapeInstance shapeModel = new ShapeInstance(300, 0, 250, 250);
-		for (int feature = 4; feature < ShapeModel.Z_SIZE; feature++) {
+		ShapeInstance shapeModel = new ShapeInstance(sm);
+		shapeModel.setFromParams(300, 0, 250, 250);
+		for (int feature = 4; feature < sm.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.1 * Math.signum(seq[s + 1] - seq[s])) {
-					shapeModel.Z.put(feature, 0, ShapeModel.e.get(feature, 0)[0] * i * shapeModel.getScale());
+					shapeModel.Z.put(feature, 0, sm.e.get(feature, 0)[0] * i * shapeModel.getScale());
 					Mat canvas = Mat.zeros(500, 500, CvType.CV_32F);
 					shapeModel.printTo(canvas);
 					ImUtils.imshow(win, canvas, 1);

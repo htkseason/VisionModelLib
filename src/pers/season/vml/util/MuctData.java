@@ -21,6 +21,7 @@ public class MuctData {
 			{ 71, 75 } };
 
 	private static int[] ignorePoints;
+	public final static int[] no_ignore = {};
 	public final static int[] default_ignore = { 68, 69, 70, 71, 72, 73, 74, 75 };
 	public final static int[] futher_ignore = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 68, 69, 70, 71, 72,
 			73, 74, 75 };
@@ -31,8 +32,6 @@ public class MuctData {
 	private static String jpgPath;
 
 	private static int ptsCounts;
-
-
 
 	public static void init(String jpgPath, String ptsFile, int[] ignore) {
 		Arrays.sort(ignore);

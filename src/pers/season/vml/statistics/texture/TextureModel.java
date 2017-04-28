@@ -31,63 +31,61 @@ import pers.season.vml.util.Triangle;
 
 public class TextureModel {
 
-	public static int delaunay[][];
-	public static Mat stdShape;
-	public static Mat meanX;
-	public static Mat U, S, e;
-	public static int X_SIZE, Z_SIZE;
-	public static int resolutionX, resolutionY;
+	public int delaunay[][];
+	public Mat stdShape;
+	public Mat meanX;
+	public Mat U, S, e;
+	public int X_SIZE, Z_SIZE;
+	public int resolutionX, resolutionY;
 	protected static final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
 	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
 
-	public static void init(String dataPath, String U_name, String meanX_name, String e_name, String meanShape_name,
-			String delaunay_name) {
+	protected TextureModel() {
+		
+	}
+	
+	public static TextureModel load(String dataPath, String U_name, String meanX_name, String e_name,
+			String meanShape_name, String delaunay_name) {
+		TextureModel tm = new TextureModel();
+		tm.U = ImUtils.loadMat(dataPath + U_name);
+		tm.meanX = ImUtils.loadMat(dataPath + meanX_name);
+		tm.e = ImUtils.loadMat(dataPath + e_name);
 
-		U = ImUtils.loadMat(dataPath + U_name);
-		meanX = ImUtils.loadMat(dataPath + meanX_name);
-		e = ImUtils.loadMat(dataPath + e_name);
-
-		stdShape = ImUtils.loadMat(dataPath + meanShape_name);
+		tm.stdShape = ImUtils.loadMat(dataPath + meanShape_name);
 		Mat delaunayMat = ImUtils.loadMat(dataPath + delaunay_name);
-		delaunay = new int[delaunayMat.rows()][];
+		tm.delaunay = new int[delaunayMat.rows()][];
 		for (int i = 0; i < delaunayMat.rows(); i++) {
-			delaunay[i] = new int[] { (int) delaunayMat.get(i, 0)[0], (int) delaunayMat.get(i, 1)[0],
+			tm.delaunay[i] = new int[] { (int) delaunayMat.get(i, 0)[0], (int) delaunayMat.get(i, 1)[0],
 					(int) delaunayMat.get(i, 2)[0] };
 
 		}
 
-		X_SIZE = U.rows();
-		Z_SIZE = U.cols();
+		tm.X_SIZE = tm.U.rows();
+		tm.Z_SIZE = tm.U.cols();
 
-		Mat stdShapeX = new Mat(stdShape.rows() / 2, 1, CvType.CV_32F);
-		Mat stdShapeY = new Mat(stdShape.rows() / 2, 1, CvType.CV_32F);
-		for (int i = 0; i < stdShape.rows() / 2; i++) {
-			stdShapeX.put(i, 0, stdShape.get(i * 2, 0)[0]);
-			stdShapeY.put(i, 0, stdShape.get(i * 2 + 1, 0)[0]);
+		Mat stdShapeX = new Mat(tm.stdShape.rows() / 2, 1, CvType.CV_32F);
+		Mat stdShapeY = new Mat(tm.stdShape.rows() / 2, 1, CvType.CV_32F);
+		for (int i = 0; i < tm.stdShape.rows() / 2; i++) {
+			stdShapeX.put(i, 0, tm.stdShape.get(i * 2, 0)[0]);
+			stdShapeY.put(i, 0, tm.stdShape.get(i * 2 + 1, 0)[0]);
 		}
 		MinMaxLocResult mmX = Core.minMaxLoc(stdShapeX);
 		MinMaxLocResult mmY = Core.minMaxLoc(stdShapeY);
-		resolutionX = (int) Math.round(mmX.maxVal - mmX.minVal + 2);
-		resolutionY = (int) Math.round(mmY.maxVal - mmY.minVal + 2);
+		tm.resolutionX = (int) Math.round(mmX.maxVal - mmX.minVal + 2);
+		tm.resolutionY = (int) Math.round(mmY.maxVal - mmY.minVal + 2);
 
-		System.out.println("TextureModel inited. " + X_SIZE + " --> " + Z_SIZE);
+		System.out.println("TextureModel inited. " + tm.X_SIZE + " --> " + tm.Z_SIZE);
+		return tm;
 
 	}
 
-	public static void clamp(Mat Z, double maxBias) {
-		for (int i = 0; i < Z_SIZE; i++) {
-			double p = Z.get(i, 0)[0];
-			if (Math.abs(p) > e.get(i, 0)[0] * maxBias)
-				Z.put(i, 0, Math.signum(p) * e.get(i, 0)[0] * maxBias);
-		}
-	}
 
-	public static void printTo(Mat Z, Mat dst, Mat shape) {
-		Mat X = TextureModel.getXfromZ(Z).reshape(1, resolutionY);
+	public void printTo(Mat Z, Mat dst, Mat shape) {
+		Mat X = getXfromZ(Z).reshape(1, resolutionY);
 		AfflineTexture(X, stdShape, dst, shape, delaunay);
 	}
 
-	public static Mat getZfromX(Mat X) {
+	public Mat getZfromX(Mat X) {
 		Mat result = new Mat();
 		X = X.reshape(1, X_SIZE);
 		Core.subtract(X, meanX, X);
@@ -95,7 +93,7 @@ public class TextureModel {
 		return result;
 	}
 
-	public static Mat getXfromZ(Mat Z) {
+	public Mat getXfromZ(Mat Z) {
 		Mat X = new Mat();
 		Core.gemm(U, Z, 1, new Mat(), 0, X);
 		Core.add(X, meanX, X);
@@ -185,7 +183,7 @@ public class TextureModel {
 
 	}
 
-	public static Mat getNormFace(Mat pic, Mat pts) {
+	public Mat getNormFace(Mat pic, Mat pts) {
 
 		float[] ptsdata = new float[pts.rows()];
 		pts.get(0, 0, ptsdata);

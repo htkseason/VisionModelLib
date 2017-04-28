@@ -37,21 +37,22 @@ public final class Entrance {
 	}
 
 	public static void main(String[] args) throws IOException {
-		MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.default_ignore);
-		Mat refShape = RegressorTrain.getRefShape(100, 100);
-		LearningParams lp = new LearningParams();
-		lp.iteration = 1000;
-		Mat theta = RegressorTrain.trainLinearModel(refShape, 7, new Size(41, 41), new Size(21, 21), 2, 0.2, lp);
-		RegressorTrain.debug_measure(refShape, 7, theta,new Size(41, 41), new Size(31, 31));
-		// ShapeModelTrain.train("models/shape/", 0.90,false);
-		ShapeModel.init("models/shape/", "V", "Z_e");
-		// ShapeModelTrain.visualize();
+		MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.no_ignore);
 
-		TextureModel.init("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
+		// ShapeModelTrain.train("models/shape/", 0.90, false);
+		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
+		// ShapeModelTrain.visualize(sm);
+
+		// TextureModelTrain.train("models/texture/", 0.95, 100, 100, true);
+		TextureModel tm = TextureModel.load("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
+		// TextureModelTrain.visualize(tm);
+
 		// TextureModelTrain.visualize();
 
-		AppearanceModel.init("models/appearance/", "U", "Z_e", "shapeWeight");
-		// AppearanceModelTrain.visualize();
+		//AppearanceModelTrain.train(sm, tm, "models/appearance/", 1.5, 0.98, false);
+		AppearanceModel am = AppearanceModel.load(sm, tm, "models/appearance/", "U", "Z_e", "shapeWeight");
+		AppearanceModelTrain.visualize(am);
+
 
 		System.out.println("program ended.");
 

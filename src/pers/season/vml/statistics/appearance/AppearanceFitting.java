@@ -10,11 +10,12 @@ import pers.season.vml.statistics.texture.TextureModel;
 public class AppearanceFitting extends AppearanceInstance {
 
 	public Mat pic;
-
-	public AppearanceFitting(Mat pic, Mat shapeZ, Mat textureZ) {
-		super(shapeZ, textureZ);
+	
+	public AppearanceFitting(AppearanceModel am, Mat pic) {
+		super(am);
 		this.pic = pic;
 	}
+
 
 	public Mat getGradient() {
 		return getGradient(0.01, 0.50);
@@ -25,18 +26,18 @@ public class AppearanceFitting extends AppearanceInstance {
 		Mat cost_U = new Mat();
 		Mat cost = getCost();
 
-		for (int i = 0; i < Z_SIZE; i++) {
+		for (int i = 0; i < am.Z_SIZE; i++) {
 			double gap = 0;
 
 			double size = Math.sqrt(Z.get(0, 0)[0] * Z.get(0, 0)[0] + Z.get(1, 0)[0] * Z.get(1, 0)[0])
-					/ ShapeModel.getScalePerPixel();
+					/ am.sm.getScalePerPixel();
 			double k = (Math.random() > 0.5 ? 1 : -1);
 			if (i < 2)
-				gap = k * ShapeModel.getScalePerPixel() * (size * rigidDescentScale);
+				gap = k * am.sm.getScalePerPixel() * (size * rigidDescentScale);
 			else if (i < 4)
-				gap = k * ShapeModel.getTransPerPixel() * (size * rigidDescentScale);
+				gap = k * am.sm.getTransPerPixel() * (size * rigidDescentScale);
 			else
-				gap = k * e.get(i - 4, 0)[0] * nonRigidDescentScale;
+				gap = k * am.e.get(i - 4, 0)[0] * nonRigidDescentScale;
 
 			Z.put(i, 0, Z.get(i, 0)[0] + gap);
 			Mat temp_cost = getCost();
@@ -64,16 +65,15 @@ public class AppearanceFitting extends AppearanceInstance {
 
 	public Mat getCost() {
 		Mat cost = new Mat();
-		Mat X = getXfromZ(Z);
-		double scale = ShapeModel.getScale(X);
+		Mat X = am.getXfromZ(Z);
+		double scale = am.sm.getScale(X);
 
-		Core.multiply(X.rowRange(4, ShapeModel.Z_SIZE), new Scalar(scale), X.rowRange(4, ShapeModel.Z_SIZE));
+		Core.multiply(X.rowRange(4, am.sm.Z_SIZE), new Scalar(scale), X.rowRange(4, am.sm.Z_SIZE));
 
-		Core.subtract(TextureModel.getXfromZ(X.rowRange(ShapeModel.Z_SIZE, X.rows())),
-				TextureModel.getNormFace(pic, ShapeModel.getXfromZ(X.rowRange(0, ShapeModel.Z_SIZE))).reshape(1,
-						TextureModel.X_SIZE),
+		Core.subtract(am.tm.getXfromZ(X.rowRange(am.sm.Z_SIZE, X.rows())),
+				am.tm.getNormFace(pic, am.sm.getXfromZ(X.rowRange(0, am.sm.Z_SIZE))).reshape(1,
+						am.tm.X_SIZE),
 				cost);
-		
 
 		return cost;
 	}
