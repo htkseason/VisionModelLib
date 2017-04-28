@@ -42,7 +42,6 @@ public class AppearanceInstance {
 
 	public void printTo(Mat dst, boolean showPts) {
 		am.printTo(Z, dst, showPts);
-		//setFromModels(getShapeZ(), getTextureZ());
 	}
 
 	public AppearanceModel getAppearanceModel() {
