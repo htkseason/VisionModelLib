@@ -1,28 +1,23 @@
 package pers.season.vml.statistics.regressor;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
-public class RegressorSetInstance extends RegressorSet {
-	protected Mat patches;
+import pers.season.vml.util.ImUtils;
+
+public class RegressorSetInstance {
+
 	protected Mat curPts;
-	protected Size patchSize;
-	protected Mat refShape;
+	protected RegressorSet rs;
 
-	protected RegressorSetInstance() {
-
-	}
-
-	public static RegressorSetInstance load(Mat patches, Size patchSize, Mat refShape) {
-		RegressorSetInstance rsi = new RegressorSetInstance();
-		rsi.patches = patches.clone();
-		rsi.patchSize = patchSize.clone();
-		rsi.refShape = refShape.clone();
-		return rsi;
+	public RegressorSetInstance(RegressorSet rs) {
+		this.rs = rs;
+		this.curPts = Mat.zeros(rs.PTS_COUNT, 1, CvType.CV_32F);
 	}
 
 	public Mat track(Mat pic, Size searchSize) {
-		Mat dstPts = track(patches, pic, curPts, refShape, patchSize, searchSize);
+		Mat dstPts = rs.track(pic, curPts, searchSize);
 		curPts = dstPts.clone();
 		return dstPts;
 	}

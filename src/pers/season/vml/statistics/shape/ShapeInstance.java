@@ -3,18 +3,18 @@ package pers.season.vml.statistics.shape;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 
-public class ShapeInstance  {
-	
+public class ShapeInstance {
+
 	protected ShapeModel sm;
 	public Mat Z;
-	
 
 	public ShapeInstance(ShapeModel sm) {
 		this.sm = sm;
 		Z = Mat.zeros(sm.Z_SIZE, 1, CvType.CV_32F);
 	}
-	
+
 	public void setFromPts(Mat pts) {
 		Z = sm.getZfromX(pts);
 	}
@@ -33,8 +33,6 @@ public class ShapeInstance  {
 		Z.put(1, 0, Z.get(0, 0)[0] * Math.sin(theta));
 	}
 
-	
-	
 	public Mat getX() {
 		return sm.getXfromZ(Z);
 	}
@@ -53,6 +51,10 @@ public class ShapeInstance  {
 		return Math.sqrt(a * a + b * b);
 	}
 
+	public Rect getLocation() {
+		return sm.getLocation(Z);
+	}
+
 	public void clamp(double maxBias) {
 		sm.clamp(Z, maxBias);
 	}
@@ -60,7 +62,7 @@ public class ShapeInstance  {
 	public void printTo(Mat dst) {
 		sm.printTo(Z, dst);
 	}
-	
+
 	public ShapeModel getShapeModel() {
 		return sm;
 	}

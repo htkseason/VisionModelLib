@@ -4,9 +4,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
-import pers.season.vml.statistics.shape.ShapeModel;
-import pers.season.vml.statistics.texture.TextureModel;
-
 public class AppearanceFitting extends AppearanceInstance {
 
 	public Mat pic;

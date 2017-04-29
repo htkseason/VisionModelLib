@@ -6,6 +6,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -88,6 +89,19 @@ public class ShapeModel {
 
 	public double getScalePerPixel() {
 		return scalePerPixel;
+	}
+	
+	public Rect getLocation(Mat Z) {
+		Mat X = getXfromZ(Z);
+		double size = getScale(Z) / getScalePerPixel();
+		double mx = 0, my = 0;
+		for (int i = 0; i < X.rows() / 2; i++) {
+			mx += X.get(i * 2, 0)[0];
+			my += X.get(i * 2 + 1, 0)[0];
+		}
+		mx /= X.rows() / 2;
+		my /= X.rows() / 2;
+		return new Rect((int) (mx - size / 2), (int) (my - size / 2), (int) size, (int) size);
 	}
 
 	protected double calcTransPerPixel() {

@@ -13,11 +13,26 @@ import org.opencv.core.Size;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.imgproc.Imgproc;
 
-public class RegressorSet {
-	protected static final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
-	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
+import pers.season.vml.util.ImUtils;
 
-	public static Mat track(Mat patches, Mat pic, Mat srcPts, Mat refShape, Size patchSize, Size searchSize) {
+public class RegressorSet {
+	protected final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
+	protected ExecutorService threadPool = Executors.newCachedThreadPool();
+	public Mat patches;
+	public Size patchSize;
+	public Mat refShape;
+	public int PTS_COUNT;
+
+	public static RegressorSet load(String path, String patches_name, String refShape_name, Size patchSize) {
+		RegressorSet rs = new RegressorSet();
+		rs.patches = ImUtils.loadMat(path + patches_name);
+		rs.patchSize = patchSize.clone();
+		rs.refShape = ImUtils.loadMat(path + refShape_name);
+		rs.PTS_COUNT = rs.patches.cols();
+		return rs;
+	}
+
+	public Mat track(Mat pic, Mat srcPts, Size searchSize) {
 
 		Mat R = getPtsAffineTrans(srcPts, refShape, pic.width() / 2, pic.height() / 2);
 		Mat dstPts = warpPtsAffine(srcPts, R);
@@ -42,11 +57,10 @@ public class RegressorSet {
 
 						MinMaxLocResult mmr = Core.minMaxLoc(response);
 
-						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x -  response.width() / 2 - 1 + px);
+						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - response.width() / 2 - 1 + px);
 						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 - 1 + py);
 					}
 					sema.release();
-					
 				}
 			});
 		}
@@ -55,8 +69,6 @@ public class RegressorSet {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-
 
 		dstPts = reversePtsAffine(dstPts, R);
 		return dstPts;
@@ -89,38 +101,37 @@ public class RegressorSet {
 	}
 
 	public static Mat predictArea(Mat pic, Mat theta, Point center, Size patchSize, Size searchSize) {
-		
+
 		// 21/20-->10
 		int searchHeightHalf = (int) searchSize.height / 2;
 		int searchWidthHalf = (int) searchSize.width / 2;
 		int patchHeightHalf = (int) patchSize.height / 2;
 		int patchWidthHalf = (int) patchSize.width / 2;
-		double bias = theta.get(0, 0)[0];
+		// double bias = theta.get(0, 0)[0];
 		theta = theta.rowRange(1, theta.rows()).clone().reshape(1, patchHeightHalf * 2 + 1);
-		int rowStart = (int) center.y - patchHeightHalf-searchHeightHalf;
-		int rowEnd = (int) center.y  + patchHeightHalf + 1 + searchHeightHalf;
-		int colStart = (int) center.x  - patchWidthHalf - searchWidthHalf;
-		int colEnd = (int) center.x +  patchWidthHalf + 1 + searchWidthHalf;
-		if (rowStart < 0 ) {
+		int rowStart = (int) center.y - patchHeightHalf - searchHeightHalf;
+		int rowEnd = (int) center.y + patchHeightHalf + 1 + searchHeightHalf;
+		int colStart = (int) center.x - patchWidthHalf - searchWidthHalf;
+		int colEnd = (int) center.x + patchWidthHalf + 1 + searchWidthHalf;
+		if (rowStart < 0) {
 			rowStart = 0;
 		}
-		if ( colStart < 0) {
+		if (colStart < 0) {
 			colStart = 0;
 		}
-		if (rowEnd >= pic.height() ) {
-			rowEnd = pic.height()-1;
+		if (rowEnd >= pic.height()) {
+			rowEnd = pic.height() - 1;
 		}
-		if ( colEnd >= pic.width()) {
-			colEnd=pic.width()-1;
+		if (colEnd >= pic.width()) {
+			colEnd = pic.width() - 1;
 		}
 		Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
 		Mat response = new Mat();
 		Imgproc.matchTemplate(subpic, theta, response, Imgproc.TM_CCOEFF_NORMED);
-		// TKM : OH MY GOD! HOW CAN 'MATCHTEMPLATE' BEING SOOOOOOOO FAAAAAST!! I LOVE OPENCV!
 		return response;
 	}
 
-	protected static Mat calcSimi(Mat pts, Mat ref) {
+	public static Mat calcSimi(Mat pts, Mat ref) {
 		// compute translation
 		double mx = 0, my = 0;
 		double refmx = 0, refmy = 0;
