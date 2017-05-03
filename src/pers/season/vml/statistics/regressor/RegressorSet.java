@@ -57,8 +57,8 @@ public class RegressorSet {
 
 						MinMaxLocResult mmr = Core.minMaxLoc(response);
 
-						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - response.width() / 2 - 1 + px);
-						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 - 1 + py);
+						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - response.width() / 2 + px);
+						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 + py);
 					}
 					sema.release();
 				}
@@ -101,13 +101,14 @@ public class RegressorSet {
 	}
 
 	public static Mat predictArea(Mat pic, Mat theta, Point center, Size patchSize, Size searchSize) {
-
 		// 21/20-->10
 		int searchHeightHalf = (int) searchSize.height / 2;
 		int searchWidthHalf = (int) searchSize.width / 2;
 		int patchHeightHalf = (int) patchSize.height / 2;
 		int patchWidthHalf = (int) patchSize.width / 2;
 		// double bias = theta.get(0, 0)[0];
+		if (theta.rows() != (int) (patchSize.height * patchSize.width + 1))
+			return null;
 		theta = theta.rowRange(1, theta.rows()).clone().reshape(1, patchHeightHalf * 2 + 1);
 		int rowStart = (int) center.y - patchHeightHalf - searchHeightHalf;
 		int rowEnd = (int) center.y + patchHeightHalf + 1 + searchHeightHalf;
@@ -119,15 +120,21 @@ public class RegressorSet {
 		if (colStart < 0) {
 			colStart = 0;
 		}
-		if (rowEnd >= pic.height()) {
-			rowEnd = pic.height() - 1;
+		if (rowEnd > pic.rows()) {
+			rowEnd = pic.rows();
 		}
-		if (colEnd >= pic.width()) {
-			colEnd = pic.width() - 1;
+		if (colEnd > pic.cols()) {
+			colEnd = pic.cols();
+		}
+		if (rowStart >= rowEnd || colStart >= colEnd) {
+			return new Mat();
 		}
 		Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
 		Mat response = new Mat();
-		Imgproc.matchTemplate(subpic, theta, response, Imgproc.TM_CCOEFF_NORMED);
+		if (theta.rows() <= subpic.rows() && theta.cols() <= subpic.cols()) {
+			Imgproc.matchTemplate(subpic, theta, response, Imgproc.TM_CCOEFF_NORMED);
+		}
+
 		return response;
 	}
 

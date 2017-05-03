@@ -77,17 +77,18 @@ public class RegressorTrain {
 
 	}
 
-	public static void debug_measure(Mat refShape, int point, Mat theta, Size patchSize, Size searchSize) {
+	public static void measureDistribution(String outputDir, String analysisFile, String thetaFile, Mat refShape,
+			int point, Mat theta, Size patchSize, Size searchSize, double measureSamplePropotion,
+			boolean showResponseImage) {
 		JFrame win = new JFrame();
 		// Mat resResult = new Mat();
-
 
 		Mat maxloc = new Mat();
 
 		for (int i = 0; i < MuctData.getSize(); i++) {
-			if (Math.random() > 0.2)
+			if (Math.random() > measureSamplePropotion)
 				continue;
-			
+
 			Mat pic = MuctData.getGrayJpg(i);
 			pic.convertTo(pic, CvType.CV_32F);
 			Core.add(pic, new Scalar(1), pic);
@@ -100,25 +101,21 @@ public class RegressorTrain {
 			int py = (int) Math.round((tpx * R.get(1, 0)[0] + tpy * R.get(1, 1)[0] + R.get(1, 2)[0]));
 			Imgproc.warpAffine(pic, pic, R, pic.size());
 
-			Mat r = RegressorSet.predictArea(pic,theta, new Point(px, py), patchSize, searchSize);
+			Mat r = RegressorSet.predictArea(pic, theta, new Point(px, py), patchSize, searchSize);
 
-			//Imgproc.blur(r, r, new Size(5, 5), new Point(-1, -1), Core.BORDER_CONSTANT);
-			// Imgproc.GaussianBlur(r, r, new Size(7,7),1, 1,
-			// Core.BORDER_CONSTANT);
-
-			// ImUtils.imshow(win, r, 5);
+			if (showResponseImage) {
+				Core.normalize(r, r, 0, 255, Core.NORM_MINMAX);
+				ImUtils.imshow(win, r, 5);
+			}
 			MinMaxLocResult mmr = Core.minMaxLoc(r);
-			Mat rmat = new Mat(1, 2, CvType.CV_32F);
-
-			rmat.put(0, 0, mmr.maxLoc.x, mmr.maxLoc.y);
-			maxloc.push_back(rmat);
+			Mat anaMat = new Mat(1, 2, CvType.CV_32F);
+			anaMat.put(0, 0, mmr.maxLoc.x - (int) r.width() / 2, mmr.maxLoc.y - (int) r.height() / 2);
+			maxloc.push_back(anaMat);
 			System.gc();
-			// resResult.push_back(r);
 
 		}
-		ImUtils.saveMat(maxloc, "e:/maxloc");
-
-		ImUtils.saveMat(theta, "e:/theta");
+		ImUtils.saveMat(maxloc, outputDir + analysisFile);
+		ImUtils.saveMat(theta, outputDir + thetaFile);
 	}
 
 	public static void getSample(Mat refShape, Mat sample, Mat response, int sampleIndex, int ptsIndex, Size patchSize,
