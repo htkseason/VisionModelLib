@@ -37,6 +37,8 @@ public class RegressorTrain {
 		Mat response = new Mat();
 
 		for (int i = 0; i < MuctData.getSize(); i++) {
+			if (i % 500 == 0)
+				System.out.println("loading samples " + i + "/" + MuctData.getSize());
 			if (Math.random() > trainSampleProportion)
 				continue;
 

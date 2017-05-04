@@ -43,12 +43,12 @@ public final class Entrance {
 		int point = 0;
 		LearningParams lp = new LearningParams();
 		lp.iteration = 1000;
-		Size  patchSize = new Size(31,31);
 		
-		Mat theta = RegressorTrain.trainLinearModel(refShape, point,patchSize, new Size(21, 21), 2, 0.2,
-				lp);
+		Size patchSize = new Size(61, 61);
+
+		Mat theta = RegressorTrain.trainLinearModel(refShape, point, patchSize, new Size(61, 61), 3, 0.2, lp);
 		RegressorTrain.measureDistribution("e:/Cool/OneDrive/temp/", "maxloc", "theta", refShape, point, theta,
-				patchSize, new Size(31, 31), 0.2, false);
+				patchSize, new Size(61, 61), 0.2, false);
 
 		// ShapeModelTrain.train("models/shape/", 0.90, false);
 		// ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");

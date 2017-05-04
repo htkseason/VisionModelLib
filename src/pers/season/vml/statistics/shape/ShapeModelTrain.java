@@ -27,7 +27,7 @@ public final class ShapeModelTrain {
 					shapeModel.printTo(canvas);
 					ImUtils.imshow(win, canvas, 1);
 					try {
-						Thread.sleep(2);
+						Thread.sleep(5);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
