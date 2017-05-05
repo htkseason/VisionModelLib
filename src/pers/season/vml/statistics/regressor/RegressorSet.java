@@ -129,6 +129,7 @@ public class RegressorSet {
 		if (rowStart >= rowEnd || colStart >= colEnd) {
 			return new Mat();
 		}
+		
 		Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
 		Mat response = new Mat();
 		if (theta.rows() <= subpic.rows() && theta.cols() <= subpic.cols()) {
