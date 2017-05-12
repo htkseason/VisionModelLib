@@ -21,18 +21,18 @@ public class FaceDetector {
 		return fd;
 	}
 
-	public List<Rect> searchFace(Mat img) {
+	public Rect[] searchFace(Mat img) {
 		MatOfRect faceResult = new MatOfRect();
 		faceDetector.detectMultiScale(img, faceResult);
 
-		List<Rect> faceRects = Arrays.asList(faceResult.toArray());
-		// sort by size
-		faceRects.sort(new Comparator<Rect>() {
+		Rect[] faceRects = faceResult.toArray();
+		Arrays.sort(faceRects,  new Comparator<Rect>() {
 			@Override
 			public int compare(Rect o1, Rect o2) {
 				return -Double.compare(o1.area(), o2.area());
 			}
-		});
+		}) ;
+
 		return faceRects;
 	}
 }

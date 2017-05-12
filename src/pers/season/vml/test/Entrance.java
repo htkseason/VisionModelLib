@@ -50,7 +50,7 @@ public final class Entrance {
 
 			System.out.println();
 		}
-
+		
 		Mat refShape = RegressorTrain.getRefShape(100, 100);
 		int point = 0;
 		LearningParams lp = new LearningParams();

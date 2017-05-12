@@ -24,11 +24,17 @@ public class RegressorSet {
 	public int PTS_COUNT;
 
 	public static RegressorSet load(String path, String patches_name, String refShape_name, Size patchSize) {
+		return load(ImUtils.loadMat(path + patches_name),ImUtils.loadMat(path + refShape_name),patchSize);
+	}
+	
+	public static RegressorSet load(Mat patches, Mat refShape, Size patchSize) {
 		RegressorSet rs = new RegressorSet();
-		rs.patches = ImUtils.loadMat(path + patches_name);
+		rs.patches = patches.clone();
 		rs.patchSize = patchSize.clone();
-		rs.refShape = ImUtils.loadMat(path + refShape_name);
+		rs.refShape = refShape.clone();
 		rs.PTS_COUNT = rs.patches.cols();
+		
+		System.out.println("RegressorSet inited. " + rs.PTS_COUNT + " points");
 		return rs;
 	}
 

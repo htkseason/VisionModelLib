@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -77,6 +78,31 @@ public class ImUtils {
 	public static Mat loadMat(String file) {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(file));
+
+			Mat result = new Mat();
+			String line;
+			while ((line = in.readLine()) != null) {
+				String[] lineseq = line.split(",");
+				Mat result_line = new Mat(1, lineseq.length, CvType.CV_32F);
+				float[] data = new float[lineseq.length];
+				for (int i = 0; i < data.length; i++)
+					data[i] = Float.parseFloat(lineseq[i]);
+				result_line.put(0, 0, data);
+				result.push_back(result_line);
+			}
+			in.close();
+			System.gc();
+			return result;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Mat loadMat(InputStream is) {
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
 
 			Mat result = new Mat();
 			String line;

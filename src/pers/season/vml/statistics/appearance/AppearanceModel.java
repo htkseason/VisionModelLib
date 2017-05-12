@@ -21,10 +21,15 @@ public class AppearanceModel {
 
 	public static AppearanceModel load(ShapeModel sm, TextureModel tm, String dataPath, String U_name, String e_name,
 			String shapeWeight_name) {
+		return load(sm, tm, ImUtils.loadMat(dataPath + U_name), ImUtils.loadMat(dataPath + e_name),
+				ImUtils.loadMat(dataPath + shapeWeight_name));
+	}
+
+	public static AppearanceModel load(ShapeModel sm, TextureModel tm, Mat U, Mat e, Mat shapeWeight) {
 		AppearanceModel am = new AppearanceModel();
-		am.U = ImUtils.loadMat(dataPath + U_name);
-		am.e = ImUtils.loadMat(dataPath + e_name);
-		am.shapeWeight = ImUtils.loadMat(dataPath + shapeWeight_name).get(0, 0)[0];
+		am.U = U.clone();
+		am.e = e.clone();
+		am.shapeWeight = shapeWeight.get(0, 0)[0];
 		am.Z_SIZE = am.U.cols() + 4;
 		am.X_SIZE = am.U.rows() + 4;
 		am.sm = sm;

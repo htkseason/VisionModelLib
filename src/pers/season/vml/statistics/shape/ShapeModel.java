@@ -22,10 +22,18 @@ public class ShapeModel {
 
 	protected double transPerPixel, scalePerPixel;
 
+	protected ShapeModel() {
+		
+	}
+	
 	public static ShapeModel load(String dataPath, String V_name, String e_name) {
+		return load(ImUtils.loadMat(dataPath + V_name),ImUtils.loadMat(dataPath + e_name));
+	}
+	
+	public static ShapeModel load(Mat V, Mat e) {
 		ShapeModel sm = new ShapeModel();
-		sm.V = ImUtils.loadMat(dataPath + V_name);
-		sm.e = ImUtils.loadMat(dataPath + e_name);
+		sm.V = V.clone();
+		sm.e = e.clone();
 		sm.X_SIZE = sm.V.rows();
 		sm.Z_SIZE = sm.V.cols();
 		sm.transPerPixel = sm.calcTransPerPixel();

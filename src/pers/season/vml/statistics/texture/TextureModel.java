@@ -41,18 +41,24 @@ public class TextureModel {
 	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
 
 	protected TextureModel() {
-		
+
 	}
-	
+
 	public static TextureModel load(String dataPath, String U_name, String meanX_name, String e_name,
 			String meanShape_name, String delaunay_name) {
-		TextureModel tm = new TextureModel();
-		tm.U = ImUtils.loadMat(dataPath + U_name);
-		tm.meanX = ImUtils.loadMat(dataPath + meanX_name);
-		tm.e = ImUtils.loadMat(dataPath + e_name);
+		return load(ImUtils.loadMat(dataPath + U_name), ImUtils.loadMat(dataPath + meanX_name),
+				ImUtils.loadMat(dataPath + e_name), ImUtils.loadMat(dataPath + meanShape_name),
+				ImUtils.loadMat(dataPath + delaunay_name));
+	}
 
-		tm.stdShape = ImUtils.loadMat(dataPath + meanShape_name);
-		Mat delaunayMat = ImUtils.loadMat(dataPath + delaunay_name);
+	public static TextureModel load(Mat U, Mat meanX, Mat e, Mat meanShape, Mat delaunay) {
+		TextureModel tm = new TextureModel();
+		tm.U = U.clone();
+		tm.meanX = meanX.clone();
+		tm.e = e.clone();
+
+		tm.stdShape = meanShape.clone();
+		Mat delaunayMat = delaunay.clone();
 		tm.delaunay = new int[delaunayMat.rows()][];
 		for (int i = 0; i < delaunayMat.rows(); i++) {
 			tm.delaunay[i] = new int[] { (int) delaunayMat.get(i, 0)[0], (int) delaunayMat.get(i, 1)[0],
@@ -78,7 +84,6 @@ public class TextureModel {
 		return tm;
 
 	}
-
 
 	public void printTo(Mat Z, Mat dst, Mat shape) {
 		Mat X = getXfromZ(Z).reshape(1, resolutionY);
