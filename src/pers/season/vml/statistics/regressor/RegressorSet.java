@@ -18,26 +18,31 @@ import pers.season.vml.util.ImUtils;
 public class RegressorSet {
 	protected final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
 	protected ExecutorService threadPool = Executors.newCachedThreadPool();
-	public Mat patches;
+	public Mat[] patches;
 	public Size patchSize;
 	public Mat refShape;
 	public int PTS_COUNT;
 
 	public static RegressorSet load(String path, String patches_name, String refShape_name, Size patchSize) {
-		return load(ImUtils.loadMat(path + patches_name),ImUtils.loadMat(path + refShape_name),patchSize);
+		return load(ImUtils.loadMat(path + patches_name), ImUtils.loadMat(path + refShape_name), patchSize);
 	}
-	
+
 	public static RegressorSet load(Mat patches, Mat refShape, Size patchSize) {
 		RegressorSet rs = new RegressorSet();
-		rs.patches = patches.clone();
+
+		rs.patches = new Mat[patches.cols()];
+		for (int i = 0; i < patches.cols(); i++) {
+			rs.patches[i] = patches.col(i).rowRange(1, patches.rows()).clone().reshape(1, (int) patchSize.height);
+		}
 		rs.patchSize = patchSize.clone();
 		rs.refShape = refShape.clone();
-		rs.PTS_COUNT = rs.patches.cols();
-		
+		rs.PTS_COUNT = patches.cols();
+
 		System.out.println("RegressorSet inited. " + rs.PTS_COUNT + " points");
 		return rs;
 	}
 
+	
 	public Mat track(Mat pic, Mat srcPts, Size searchSize) {
 
 		Mat R = getPtsAffineTrans(srcPts, refShape, pic.width() / 2, pic.height() / 2);
@@ -59,7 +64,7 @@ public class RegressorSet {
 							continue;
 						double px = dstPtsFinal.get(i * 2, 0)[0];
 						double py = dstPtsFinal.get(i * 2 + 1, 0)[0];
-						Mat response = predictArea(affPic, patches.col(i), new Point(px, py), patchSize, searchSize);
+						Mat response = predictArea(affPic, patches[i], new Point(px, py), patchSize, searchSize);
 
 						MinMaxLocResult mmr = Core.minMaxLoc(response);
 
@@ -112,10 +117,7 @@ public class RegressorSet {
 		int searchWidthHalf = (int) searchSize.width / 2;
 		int patchHeightHalf = (int) patchSize.height / 2;
 		int patchWidthHalf = (int) patchSize.width / 2;
-		// double bias = theta.get(0, 0)[0];
-		if (theta.rows() != (int) (patchSize.height * patchSize.width + 1))
-			return null;
-		theta = theta.rowRange(1, theta.rows()).clone().reshape(1, patchHeightHalf * 2 + 1);
+
 		int rowStart = (int) center.y - patchHeightHalf - searchHeightHalf;
 		int rowEnd = (int) center.y + patchHeightHalf + 1 + searchHeightHalf;
 		int colStart = (int) center.x - patchWidthHalf - searchWidthHalf;
@@ -135,7 +137,7 @@ public class RegressorSet {
 		if (rowStart >= rowEnd || colStart >= colEnd) {
 			return new Mat();
 		}
-		
+
 		Mat subpic = pic.submat(rowStart, rowEnd, colStart, colEnd);
 		Mat response = new Mat();
 		if (theta.rows() <= subpic.rows() && theta.cols() <= subpic.cols()) {

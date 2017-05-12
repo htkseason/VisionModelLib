@@ -20,6 +20,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -99,7 +100,7 @@ public class ImUtils {
 		}
 		return null;
 	}
-	
+
 	public static Mat loadMat(InputStream is) {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(is));
@@ -178,6 +179,18 @@ public class ImUtils {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static void drawRotatedRect(Mat image, RotatedRect rr) {
+		drawRotatedRect(image, rr, 1);
+	}
+
+	public static void drawRotatedRect(Mat image, RotatedRect rr, int thickness) {
+		Point[] pts = new Point[4];
+		rr.points(pts);
+		for (int i = 0; i < 4; i++) {
+			Imgproc.line(image, pts[i], pts[(i + 1) % 4], new Scalar(255), thickness);
+		}
 	}
 
 	public static void sharpen(Mat src, Mat dst) {

@@ -4,6 +4,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 
 public class ShapeInstance {
 
@@ -51,8 +52,12 @@ public class ShapeInstance {
 		return Math.sqrt(a * a + b * b);
 	}
 
-	public Rect getLocation() {
+	public RotatedRect getLocation() {
 		return sm.getLocation(Z);
+	}
+	
+	public Rect getLocationRect() {
+		return sm.getLocationRect(Z);
 	}
 
 	public void clamp(double maxBias) {

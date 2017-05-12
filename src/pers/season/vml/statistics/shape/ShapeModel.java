@@ -7,6 +7,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -23,13 +24,13 @@ public class ShapeModel {
 	protected double transPerPixel, scalePerPixel;
 
 	protected ShapeModel() {
-		
+
 	}
-	
+
 	public static ShapeModel load(String dataPath, String V_name, String e_name) {
-		return load(ImUtils.loadMat(dataPath + V_name),ImUtils.loadMat(dataPath + e_name));
+		return load(ImUtils.loadMat(dataPath + V_name), ImUtils.loadMat(dataPath + e_name));
 	}
-	
+
 	public static ShapeModel load(Mat V, Mat e) {
 		ShapeModel sm = new ShapeModel();
 		sm.V = V.clone();
@@ -70,6 +71,18 @@ public class ShapeModel {
 		return Math.sqrt(a * a + b * b);
 	}
 
+	public double getRadian(Mat Z) {
+		double scale = getScale(Z);
+		double cos = Z.get(0, 0)[0] / scale;
+		double sin = Z.get(1, 0)[0] / scale;
+		if (sin == 0)
+			return cos > 0 ? Math.PI * 0.0 : Math.PI * 1.0;
+		if (cos == 0)
+			return sin > 0 ? Math.PI * 0.5 : Math.PI * 1.5;
+		double radian = Math.atan(sin / cos);
+		return cos > 0 ? radian : sin > 0 ? Math.PI + radian : -Math.PI + radian;
+	}
+
 	public Mat getZfromX(Mat X) {
 		Mat result = new Mat();
 		Core.gemm(V.t(), X, 1, new Mat(), 0, result);
@@ -98,8 +111,23 @@ public class ShapeModel {
 	public double getScalePerPixel() {
 		return scalePerPixel;
 	}
-	
-	public Rect getLocation(Mat Z) {
+
+	public RotatedRect getLocation(Mat Z) {
+		Mat X = getXfromZ(Z);
+		double size = getScale(Z) / getScalePerPixel();
+		double radian = getRadian(Z);
+		double mx = 0, my = 0;
+		for (int i = 0; i < X.rows() / 2; i++) {
+			mx += X.get(i * 2, 0)[0];
+			my += X.get(i * 2 + 1, 0)[0];
+		}
+		mx /= X.rows() / 2;
+		my /= X.rows() / 2;
+		double degree = 180 * radian / Math.PI;
+		return new RotatedRect(new Point(mx, my), new Size(size, size), degree);
+	}
+
+	public Rect getLocationRect(Mat Z) {
 		Mat X = getXfromZ(Z);
 		double size = getScale(Z) / getScalePerPixel();
 		double mx = 0, my = 0;
