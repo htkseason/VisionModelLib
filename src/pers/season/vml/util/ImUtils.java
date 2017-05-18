@@ -5,6 +5,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -92,7 +94,6 @@ public class ImUtils {
 				result.push_back(result_line);
 			}
 			in.close();
-			System.gc();
 			return result;
 
 		} catch (Exception e) {
@@ -117,7 +118,6 @@ public class ImUtils {
 				result.push_back(result_line);
 			}
 			in.close();
-			System.gc();
 			return result;
 
 		} catch (Exception e) {
@@ -143,11 +143,50 @@ public class ImUtils {
 					else
 						out.write(Math.round(data[ii]) + "\n");
 				}
-
 			}
-
 			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
+	public static byte[] shortToByte(short s) {
+		byte[] b = new byte[2];
+		b[1] = (byte) (s >> 8);
+		b[0] = (byte) (s >> 0);
+		return b;
+	}
+
+	public static void save8UMatAsBin(Mat mat, String file) {
+		try {
+			new File(file).getParentFile().mkdirs();
+			FileOutputStream out = new FileOutputStream(new File(file));
+
+			byte[] data = new byte[mat.cols() * mat.channels()];
+			for (int i = 0; i < mat.rows(); i++) {
+				mat.get(i, 0, data);
+				for (int ii = 0; ii < data.length; ii++) {
+					out.write(data[ii]);
+				}
+			}
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public static void save16UMatAsBin(Mat mat, String file) {
+		try {
+			new File(file).getParentFile().mkdirs();
+			FileOutputStream out = new FileOutputStream(new File(file));
+
+			short[] data = new short[mat.cols() * mat.channels()];
+			for (int i = 0; i < mat.rows(); i++) {
+				mat.get(i, 0, data);
+				for (int ii = 0; ii < data.length; ii++) {
+					out.write(shortToByte(data[ii]));
+				}
+			}
+			out.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

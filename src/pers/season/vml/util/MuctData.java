@@ -1,5 +1,6 @@
 package pers.season.vml.util;
 
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class MuctData {
 			String line;
 			while ((line = in.readLine()) != null) {
 				// invalid data
-				if (line.contains(",0,0,") || line.startsWith("ir") || line.contains("i434xe-fn"))
+				if (line.startsWith("ir") || line.contains("i434xe-fn"))
 					continue;
 
 				// 76 minus 8+15 points, ignoring last 8 points on eyes and 15
@@ -54,13 +55,21 @@ public class MuctData {
 				float[] ptsData = new float[ptsCounts * 2];
 				String[] lineseq = line.split(",");
 
+				boolean brokenData = false;
 				for (int i = 0; i < 76 * 2; i++) {
-					if (Arrays.binarySearch(ignore, i / 2) < 0)
+					if (Arrays.binarySearch(ignore, i / 2) < 0) {
+						if (lineseq[i + 2].contentEquals("0")) {
+							brokenData = true;
+							break;
+						}
 						ptsData[(i / 2 - (-Arrays.binarySearch(ignore, i / 2) - 1)) * 2 + i % 2] = Float
 								.parseFloat(lineseq[i + 2]);
+					}
 				}
-				fileNameLst.add(lineseq[0]);
-				ptsDataLst.add(ptsData);
+				if (!brokenData) {
+					fileNameLst.add(lineseq[0]);
+					ptsDataLst.add(ptsData);
+				}
 
 			}
 			projectMirrorShape();
