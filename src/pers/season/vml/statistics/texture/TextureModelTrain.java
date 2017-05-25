@@ -12,11 +12,14 @@ import pers.season.vml.util.ImUtils;
 import pers.season.vml.util.MuctData;
 
 public class TextureModelTrain {
-
 	public static void visualize(TextureModel tm) {
+		visualize(tm, tm.Z_SIZE);
+	}
+
+	public static void visualize(TextureModel tm, int features) {
 		JFrame win = new JFrame();
 		TextureInstance textureModel = new TextureInstance(tm);
-		for (int feature = 0; feature < tm.Z_SIZE; feature++) {
+		for (int feature = 0; feature < features && feature < tm.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {

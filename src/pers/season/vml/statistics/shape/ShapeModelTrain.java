@@ -12,12 +12,15 @@ import pers.season.vml.util.ImUtils;
 import pers.season.vml.util.MuctData;
 
 public final class ShapeModelTrain {
-
 	public static void visualize(ShapeModel sm) {
+		visualize(sm, sm.Z_SIZE - 4);
+	}
+
+	public static void visualize(ShapeModel sm, int features) {
 		JFrame win = new JFrame();
 		ShapeInstance shapeModel = new ShapeInstance(sm);
 		shapeModel.setFromParams(300, 0, 250, 250);
-		for (int feature = 4; feature < sm.Z_SIZE; feature++) {
+		for (int feature = 4; feature < features + 4 && feature < sm.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {

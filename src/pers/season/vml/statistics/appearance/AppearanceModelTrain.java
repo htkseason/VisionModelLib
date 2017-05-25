@@ -15,8 +15,11 @@ import pers.season.vml.util.ImUtils;
 import pers.season.vml.util.MuctData;
 
 public class AppearanceModelTrain {
-
 	public static void visualize(AppearanceModel am) {
+		visualize(am, am.Z_SIZE - 4);
+	}
+
+	public static void visualize(AppearanceModel am, int features) {
 		JFrame win = new JFrame();
 		ShapeInstance shape = new ShapeInstance(am.sm);
 		shape.setFromParams(300, 0, 250, 250);
@@ -24,7 +27,7 @@ public class AppearanceModelTrain {
 
 		AppearanceInstance app = new AppearanceInstance(am);
 		app.setFromModels(shape.getZ(), texture.getZ());
-		for (int feature = 4; feature < am.Z_SIZE; feature++) {
+		for (int feature = 4; feature < 4 + features && feature < am.Z_SIZE; feature++) {
 			win.setTitle("Feature = " + feature);
 			double[] seq = new double[] { 0, 3, -3, 0 };
 			for (int s = 0; s < seq.length - 1; s++) {
