@@ -174,7 +174,7 @@ public class ImUtils {
 			e.printStackTrace();
 		}
 	}
-	public static void save16UMatAsBin(Mat mat, String file) {
+	public static void save16SMatAsBin(Mat mat, String file) {
 		try {
 			new File(file).getParentFile().mkdirs();
 			FileOutputStream out = new FileOutputStream(new File(file));
