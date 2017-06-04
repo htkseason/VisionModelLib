@@ -1,14 +1,14 @@
 # VisionModelLib  
 This project implements ShapeModel, TextureModel, AppearanceModel, PatchRegressor and training tools for them.  
-This project is __LIBRARY ONLY__. Practical usage samples are included in other repositories.  
   
 ---  
   
 ## Instructions  
+This project is __LIBRARY ONLY__. Practical usage samples are included in other repositories.  
 This project is written with java and rely on [OpenCV 3.2.0](http://opencv.org/releases.html) java interface  
 
 In order to train models, you need to download [Muct database](http://www.milbo.org/muct/) or other similar databases OR you can use the models I pre-trained for you. (included in 'models' folder)  
-The pre-trained models are face-shape-model, face-texture-model, an integrated face-appearance-model and 76-points-patch-model which are all trained from MUCT database.  
+The pre-trained models are face-shape-model, face-texture-model, an integrated face-appearance-model and 76-points-patch-model which are all trained from Muct database.  
   
 ---
   
