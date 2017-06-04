@@ -1,5 +1,5 @@
 # VisionModelLib  
-This project includes implement of ShapeModel, TextureModel, AppearanceModel, PatchRegressor and training tools for them.  
+This project implements ShapeModel, TextureModel, AppearanceModel, PatchRegressor and training tools for them.  
 This project is __LIBRARY ONLY__. Practical usage samples are included in other repositories.  
   
 ---  
