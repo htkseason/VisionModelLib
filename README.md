@@ -3,7 +3,7 @@ This project implements ShapeModel, TextureModel, AppearanceModel, PatchRegresso
   
 ---  
   
-## Instructions  
+### Instructions  
 This project is __LIBRARY ONLY__. Examples are included in other repositories.  
 This project is written with java and rely on [OpenCV 3.2.0](http://opencv.org/releases.html) java interface  
 
@@ -12,7 +12,7 @@ The pre-trained models are face-shape-model, face-texture-model, an integrated f
   
 ---
   
-## Examples  
+### Examples  
   
 __Example 1 : AAM-Fitting (Using Appearance-Model, Texture-Model and Shape-Model)__  
 [github.com/htkseason/AAM-Fitting](https://github.com/htkseason/AAM-Fitting)  
@@ -28,7 +28,7 @@ __Example 3 : Face-Twisting (Using Shape-Model and triangle mesh)__
   
 ---  
   
-## References  
+### References  
 [Cootes and C.J.Taylor. Statistical Models of Appearance for Computer Vision. University of Manchester, March 2004](http://www.face-rec.org/algorithms/AAM/app_models.pdf)  
   
 [github.com/MasteringOpenCV](https://github.com/MasteringOpenCV/code)  
