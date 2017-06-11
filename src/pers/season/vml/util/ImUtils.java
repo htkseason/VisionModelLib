@@ -1,5 +1,6 @@
 package pers.season.vml.util;
 
+import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,6 +17,8 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -39,15 +42,32 @@ public class ImUtils {
 	}
 
 	public static void imshow(JFrame win, Mat img, float scale) {
-		win.getContentPane().removeAll();
-		win.getContentPane().setLayout(null);
-		JLabel lbl = new JLabel("");
-		lbl.setBounds(0, 0, (int) (img.width() * scale), (int) (img.height() * scale));
-		lbl.setIcon(new ImageIcon(ImUtils.encodeImage(img, scale)));
-		win.getContentPane().add(lbl);
-		win.setSize((int) (img.width() * scale) + 20, (int) (img.height() * scale) + 40);
-		win.setVisible(true);
+
+		JLabel lbl;
+		if (win.getContentPane().getComponentCount() == 0) {
+			// win.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			win.getContentPane().removeAll();
+			win.getContentPane().setLayout(null);
+			lbl = new JLabel("");
+			// lbl.setBounds(0, 0, (int) (img.width() * scale), (int)
+			// (img.height() * scale));
+			win.getContentPane().add(lbl);
+			win.setSize((int) (img.width() * scale) + 20, (int) (img.height() * scale) + 40);
+			win.setVisible(true);
+			win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		} else {
+			Component c = win.getContentPane().getComponent(0);
+			if (c.getClass() != JLabel.class)
+				return;
+			lbl = (JLabel) c;
+		}
+		imdraw(lbl, img, scale);
 		win.repaint();
+	}
+
+	public static void imdraw(JLabel lbl, Mat img, float scale) {
+		lbl.setIcon(new ImageIcon(ImUtils.encodeImage(img, scale)));
+		lbl.setBounds(0, 0, (int) (img.width() * scale), (int) (img.height() * scale));
 	}
 
 	public static BufferedImage encodeImage(Mat image, float scale) {
@@ -174,6 +194,7 @@ public class ImUtils {
 			e.printStackTrace();
 		}
 	}
+
 	public static void save16SMatAsBin(Mat mat, String file) {
 		try {
 			new File(file).getParentFile().mkdirs();
@@ -276,9 +297,33 @@ public class ImUtils {
 		System.out.println("timing : " + getTiming());
 	}
 
-	public static double getCostE(Mat cost) {
-		Mat result = new Mat();
-		Core.gemm(cost.t(), cost, 1, new Mat(), 0, result);
-		return result.get(0, 0)[0];
+	public static byte[] get8UMatData(Mat mat) {
+		byte[] result = new byte[(int) mat.total()*mat.channels()];
+		mat.get(0, 0, result);
+		return result;
+	}
+
+	public static float[] get32FMatData(Mat mat) {
+		float[] result = new float[(int) mat.total()*mat.channels()];
+		mat.get(0, 0, result);
+		return result;
+	}
+
+	public static void printMat(Mat mat) {
+		System.out.print("[  ");
+		for (int r = 0; r < mat.rows(); r++) {
+			for (int c = 0; c < mat.cols(); c++) {
+				if (mat.channels() > 1) {
+					System.out.print("(");
+					for (double val : mat.get(r, c))
+						System.out.print(val + ", ");
+					System.out.print("), ");
+				} else {
+					System.out.print(mat.get(r, c)[0] + ", ");
+				}
+			}
+			System.out.println();
+		}
+		System.out.println("   ]");
 	}
 }
