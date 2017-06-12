@@ -11,9 +11,14 @@ public class Kalman {
 	protected KalmanFilter kalman;
 	protected Mat measurement;
 	protected int paramc;
+	protected Mat offsets;
 
 	public Kalman(int paramc) {
 		this.paramc = paramc;
+		init();
+	}
+
+	protected void init() {
 		kalman = new KalmanFilter(paramc * 2, paramc);
 		measurement = Mat.zeros(paramc, 1, CvType.CV_32F);
 		Core.setIdentity(kalman.get_measurementMatrix());
@@ -30,16 +35,29 @@ public class Kalman {
 		}
 	}
 
-	public void correct(double params[]) {
-		if (params.length != paramc)
+	public void reset() {
+		init();
+		offsets = null;
+	}
+
+	public void correct(Mat params) {
+		if (params.total() * params.channels() != paramc)
 			return;
-		measurement.put(0, 0, params);
+		params.copyTo(measurement);
+		if (offsets == null)
+			offsets = measurement.clone();
+		Core.subtract(measurement, offsets, measurement);
+		
 		kalman.correct(measurement);
-			
+
 	}
 
 	public Mat predict() {
-		return kalman.predict();
+		Mat result = kalman.predict().clone();
+		ImUtils.printMat(result);
+		Core.add(result.rowRange(0, paramc), offsets, result.rowRange(0, paramc));
+		ImUtils.printMat(result);
+		return result;
 	}
 
 	public int getParamCount() {
