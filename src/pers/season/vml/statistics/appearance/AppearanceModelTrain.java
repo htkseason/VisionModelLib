@@ -33,7 +33,7 @@ public class AppearanceModelTrain {
 			for (int s = 0; s < seq.length - 1; s++) {
 				for (double i = seq[s]; Math.abs(i - seq[s + 1]) > 0.001; i += 0.25
 						* Math.signum(seq[s + 1] - seq[s])) {
-					app.Z.put(feature, 0, am.e.get(feature, 0)[0] * i);
+					app.Z.put(feature, 0, am.e.get(feature-4, 0)[0] * i);
 					Mat canvas = Mat.zeros(500, 500, CvType.CV_32F);
 					app.printTo(canvas, true);
 					ImUtils.imshow(win, canvas, 1);
