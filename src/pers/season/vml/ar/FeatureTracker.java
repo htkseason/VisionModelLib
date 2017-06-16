@@ -23,14 +23,16 @@ import org.opencv.features2d.Feature2D;
 import org.opencv.features2d.KAZE;
 import org.opencv.imgproc.Imgproc;
 
-public class FeatureDM {
+import pers.season.vml.util.ImUtils;
+
+public class FeatureTracker {
 	protected Feature2D f2d = AKAZE.create(AKAZE.DESCRIPTOR_KAZE, 0, 3, 0.001f, 4, 4, KAZE.DIFF_PM_G2);
 	protected DescriptorMatcher bfm = BFMatcher.create(Core.NORM_HAMMING);
 
 	protected Mat template;
 	protected MatOfKeyPoint srcKp;
 	protected Mat srcDes;
-
+	protected MatOfPoint2f matchedDstPoints;
 	protected final static int MIN_QUERY_KPS = 8;
 
 	public void setTemplate(Mat template) {
@@ -42,6 +44,10 @@ public class FeatureDM {
 	}
 
 	public Mat findHomo(Mat pic, boolean refine) {
+		return findHomo(pic, refine, true);
+	}
+
+	protected Mat findHomo(Mat pic, boolean refine, boolean isExternalCall) {
 
 		Mat dstDes = new Mat();
 		MatOfKeyPoint dstKp = new MatOfKeyPoint();
@@ -80,20 +86,28 @@ public class FeatureDM {
 		if (homo.empty())
 			return null;
 
-		for (int i = 0; i < mask.total(); i++) {
-			if (mask.get(i, 0)[0] != 0)
-				Imgproc.circle(pic, goodDstPoints.toArray()[i], 2, new Scalar(0, 255, 0), 2);
-		}
 		int inliersCount = (int) Core.sumElems(mask).val[0];
-
 		if (inliersCount < MIN_QUERY_KPS)
 			return null;
+
+		if (isExternalCall) {
+			int index = 0;
+			Point[] matchedDstPointsArr = new Point[inliersCount];
+			for (int i = 0; i < mask.total(); i++) {
+				if (mask.get(i, 0)[0] != 0) {
+					// Imgproc.circle(pic, goodDstPoints.toArray()[i], 2, new
+					// Scalar(0, 255, 0), 2);
+					matchedDstPointsArr[index++] = goodDstPoints.toArray()[i];
+				}
+			}
+			matchedDstPoints = new MatOfPoint2f(matchedDstPointsArr);
+		}
 
 		if (refine) {
 			Mat warpedPic = new Mat();
 			Imgproc.warpPerspective(pic, warpedPic, homo, template.size(),
 					Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
-			Mat refinedHomo = findHomo(warpedPic, false);
+			Mat refinedHomo = findHomo(warpedPic, false, false);
 			if (refinedHomo == null)
 				return homo;
 			Mat result = new Mat();
@@ -102,6 +116,10 @@ public class FeatureDM {
 		}
 
 		return homo;
+	}
+
+	public MatOfPoint2f getMatchedDstPoints() {
+		return matchedDstPoints;
 	}
 
 	public void solvePnp(Mat homo, Mat camMat, Mat rvec, Mat tvec) {
@@ -118,7 +136,7 @@ public class FeatureDM {
 	public Mat getQuadFromHomo(Mat homo) {
 		Mat srcRect = Mat.ones(4, 1, CvType.CV_32FC2);
 		srcRect.put(0, 0, 0, 0, template.width(), 0, template.width(), template.height(), 0, template.height());
-		
+
 		Mat dstQuad = new Mat();
 		Core.perspectiveTransform(srcRect, dstQuad, homo);
 
