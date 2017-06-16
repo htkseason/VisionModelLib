@@ -1,6 +1,5 @@
 package pers.season.vml.statistics.texture;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,24 +8,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-import javax.rmi.CORBA.Util;
-
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfFloat6;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Subdiv2D;
 
-import pers.season.vml.statistics.shape.ShapeModel;
 import pers.season.vml.util.ImUtils;
-import pers.season.vml.util.MuctData;
 import pers.season.vml.util.Triangle;
 
 public class TextureModel {
