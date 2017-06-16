@@ -4,6 +4,8 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
+import pers.season.vml.util.ImUtils;
+
 public class AppearanceFitting extends AppearanceInstance {
 
 	public Mat pic;
@@ -18,7 +20,7 @@ public class AppearanceFitting extends AppearanceInstance {
 		return getGradient(0.01, 0.50);
 	}
 
-	public Mat getGradient(double rigidDescentScale, double nonRigidDescentScale) {
+	public Mat getGradient(double rigidProbeScale, double nonRigidProbeScale) {
 
 		Mat cost_U = new Mat();
 		Mat cost = getCost();
@@ -30,12 +32,11 @@ public class AppearanceFitting extends AppearanceInstance {
 					/ am.sm.getScalePerPixel();
 			double k = (Math.random() > 0.5 ? 1 : -1);
 			if (i < 2)
-				gap = k * am.sm.getScalePerPixel() * (size * rigidDescentScale);
+				gap = k * am.sm.getScalePerPixel() * (size * rigidProbeScale);
 			else if (i < 4)
-				gap = k * am.sm.getTransPerPixel() * (size * rigidDescentScale);
+				gap = k * am.sm.getTransPerPixel() * (size * rigidProbeScale);
 			else
-				gap = k * am.e.get(i - 4, 0)[0] * nonRigidDescentScale;
-
+				gap = k * am.e.get(i - 4, 0)[0] * nonRigidProbeScale;
 			Z.put(i, 0, Z.get(i, 0)[0] + gap);
 			Mat temp_cost = getCost();
 			Core.subtract(temp_cost, cost, temp_cost);
@@ -44,14 +45,12 @@ public class AppearanceFitting extends AppearanceInstance {
 			cost_U.push_back(temp_cost.t());
 
 		}
-
 		cost_U = cost_U.t();
 		Mat result = new Mat();
 		Core.gemm(cost_U.t(), cost_U, 1, new Mat(), 0, result);
 		Core.invert(result, result);
 		Core.gemm(result, cost_U.t(), 1, new Mat(), 0, result);
 		Core.gemm(result, cost, 1, new Mat(), 0, result);
-
 		return result;
 	}
 
@@ -61,6 +60,7 @@ public class AppearanceFitting extends AppearanceInstance {
 	}
 
 	public Mat getCost() {
+
 		Mat cost = new Mat();
 		Mat X = am.getXfromZ(Z);
 		double scale = am.sm.getScale(X);

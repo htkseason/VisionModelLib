@@ -52,7 +52,7 @@ public class ImUtils {
 			// lbl.setBounds(0, 0, (int) (img.width() * scale), (int)
 			// (img.height() * scale));
 			win.getContentPane().add(lbl);
-			win.setSize((int) (img.width() * scale) + 20, (int) (img.height() * scale) + 40);
+			win.setSize((int) (img.width() * scale) + 17, (int) (img.height() * scale) + 40);
 			win.setVisible(true);
 			win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		} else {

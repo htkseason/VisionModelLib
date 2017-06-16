@@ -99,7 +99,7 @@ public class TextureModelTrain {
 			Mat pic = MuctData.getGrayJpg(i);
 			pic.convertTo(pic, CvType.CV_32F);
 			Mat normFace = Mat.zeros(resolution_y, resolution_x, CvType.CV_32F);
-			TextureModel.AfflineTexture(pic, MuctData.getPtsMat(i), normFace, meanShape, delaunay);
+			TextureModel.AffineTexture(pic, MuctData.getPtsMat(i), normFace, meanShape, delaunay);
 			normFace = normFace.reshape(1, 1);
 			X.push_back(normFace);
 			if (i % 100 == 0 || i == MuctData.getSize() - 1)

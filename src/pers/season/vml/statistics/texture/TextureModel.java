@@ -87,7 +87,7 @@ public class TextureModel {
 
 	public void printTo(Mat Z, Mat dst, Mat shape) {
 		Mat X = getXfromZ(Z).reshape(1, resolutionY);
-		AfflineTexture(X, stdShape, dst, shape, delaunay);
+		AffineTexture(X, stdShape, dst, shape, delaunay);
 	}
 
 	public Mat getZfromX(Mat X) {
@@ -139,7 +139,7 @@ public class TextureModel {
 		return result;
 	}
 
-	public static void AfflineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
+	public static void AffineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
 		Semaphore sema = new Semaphore(0);
 
 		for (int threadIndex = 0; threadIndex < CORE_COUNTS; threadIndex++) {
@@ -195,7 +195,7 @@ public class TextureModel {
 
 		Mat result = Mat.zeros(new Size(resolutionX, resolutionY), pic.type());
 
-		AfflineTexture(pic, pts, result, stdShape, delaunay);
+		AffineTexture(pic, pts, result, stdShape, delaunay);
 
 		return result;
 
