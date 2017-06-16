@@ -37,8 +37,8 @@ public class TextureModel {
 	public Mat U, S, e;
 	public int X_SIZE, Z_SIZE;
 	public int resolutionX, resolutionY;
-	protected static final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
-	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
+	protected static ExecutorService threadPool = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	protected TextureModel() {
 
@@ -142,46 +142,44 @@ public class TextureModel {
 	public static void AffineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
 		Semaphore sema = new Semaphore(0);
 
-		for (int threadIndex = 0; threadIndex < CORE_COUNTS; threadIndex++) {
-			final int curThreadIndex = threadIndex;
+		for (int i = 0; i < delaunay.length; i++) {
+			final int index = i;
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
-					for (int i = 0; i < delaunay.length; i++) {
-						if (curThreadIndex != i % CORE_COUNTS)
-							continue;
-						int x1i = delaunay[i][0] * 2;
-						int y1i = delaunay[i][0] * 2 + 1;
-						int x2i = delaunay[i][1] * 2;
-						int y2i = delaunay[i][1] * 2 + 1;
-						int x3i = delaunay[i][2] * 2;
-						int y3i = delaunay[i][2] * 2 + 1;
-						double x1 = srcpts.get(x1i, 0)[0];
-						double y1 = srcpts.get(y1i, 0)[0];
-						double x2 = srcpts.get(x2i, 0)[0];
-						double y2 = srcpts.get(y2i, 0)[0];
-						double x3 = srcpts.get(x3i, 0)[0];
-						double y3 = srcpts.get(y3i, 0)[0];
+					int x1i = delaunay[index][0] * 2;
+					int y1i = delaunay[index][0] * 2 + 1;
+					int x2i = delaunay[index][1] * 2;
+					int y2i = delaunay[index][1] * 2 + 1;
+					int x3i = delaunay[index][2] * 2;
+					int y3i = delaunay[index][2] * 2 + 1;
+					double x1 = srcpts.get(x1i, 0)[0];
+					double y1 = srcpts.get(y1i, 0)[0];
+					double x2 = srcpts.get(x2i, 0)[0];
+					double y2 = srcpts.get(y2i, 0)[0];
+					double x3 = srcpts.get(x3i, 0)[0];
+					double y3 = srcpts.get(y3i, 0)[0];
 
-						double nx1 = dstpts.get(x1i, 0)[0];
-						double ny1 = dstpts.get(y1i, 0)[0];
-						double nx2 = dstpts.get(x2i, 0)[0];
-						double ny2 = dstpts.get(y2i, 0)[0];
-						double nx3 = dstpts.get(x3i, 0)[0];
-						double ny3 = dstpts.get(y3i, 0)[0];
+					double nx1 = dstpts.get(x1i, 0)[0];
+					double ny1 = dstpts.get(y1i, 0)[0];
+					double nx2 = dstpts.get(x2i, 0)[0];
+					double ny2 = dstpts.get(y2i, 0)[0];
+					double nx3 = dstpts.get(x3i, 0)[0];
+					double ny3 = dstpts.get(y3i, 0)[0];
 
-						Triangle t = new Triangle(srcpic, x1, y1, x2, y2, x3, y3);
-						t.shift(nx1, ny1, nx2, ny2, nx3, ny3);
+					Triangle t = new Triangle(srcpic, x1, y1, x2, y2, x3, y3);
+					t.shift(nx1, ny1, nx2, ny2, nx3, ny3);
 
-						t.transTextureTo(dstpic);
-
-					}
+					t.transTextureTo(dstpic);
 					sema.release();
 				}
+
 			});
+
 		}
+
 		try {
-			sema.acquire(CORE_COUNTS);
+			sema.acquire(delaunay.length);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

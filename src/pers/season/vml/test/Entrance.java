@@ -5,16 +5,26 @@ import java.util.UUID;
 
 import javax.swing.JFrame;
 
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoCapture;
 
+import pers.season.vml.ar.CameraData;
+import pers.season.vml.ar.Engine3D;
+import pers.season.vml.ar.FeatureTracker;
+import pers.season.vml.ar.MotionFilter;
 import pers.season.vml.statistics.appearance.AppearanceFitting;
 import pers.season.vml.statistics.appearance.AppearanceModel;
 import pers.season.vml.statistics.appearance.AppearanceModelTrain;
@@ -37,15 +47,17 @@ public final class Entrance {
 	}
 
 	public static void main(String[] args) throws IOException {
-		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
-		ShapeModelTrain.visualize(sm, 4);
-		TextureModel tm = TextureModel.load("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
-		TextureModelTrain.visualize(tm, 4);
-		AppearanceModel am = AppearanceModel.load(sm, tm, "models/appearance/", "U", "Z_e", "shapeWeight");
-		AppearanceModelTrain.visualize(am, 4);
-
-		System.out.println("program ended.");
+		visionModelDemo();
+	
 
 	}
 
+	public static void visionModelDemo() {
+		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
+		//ShapeModelTrain.visualize(sm,8);
+		TextureModel tm = TextureModel.load("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
+		//TextureModelTrain.visualize(tm,8);
+		AppearanceModel am = AppearanceModel.load(sm, tm, "models/appearance/", "U", "Z_e", "shapeWeight");
+		AppearanceModelTrain.visualize(am);
+	}
 }

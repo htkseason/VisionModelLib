@@ -44,9 +44,9 @@ public class Triangle {
 		int minY = (int) Math.min(Math.min(ny1, ny2), ny3) - offset;
 		minY = minY < 0 ? 0 : minY;
 		int maxX = (int) Math.max(Math.max(nx1, nx2), nx3) + offset;
-		maxX = maxX >= dst.cols() ? dst.cols() - 1 : maxX;
+		maxX = maxX >= dst.width() ? dst.width() - 1 : maxX;
 		int maxY = (int) Math.max(Math.max(ny1, ny2), ny3) + offset;
-		maxY = maxY >= dst.rows() ? dst.rows() - 1 : maxY;
+		maxY = maxY >= dst.height() ? dst.height() - 1 : maxY;
 
 		// calculate translation matrix
 		MatOfPoint2f srcPosition = new MatOfPoint2f(new Point(x1, y1), new Point(x2, y2), new Point(x3, y3));
@@ -63,7 +63,6 @@ public class Triangle {
 		Imgproc.fillConvexPoly(mask, temp_mop, new Scalar(255, 255, 255));
 		// copy to dst
 		Mat tempdst = new Mat();
-
 		Imgproc.warpAffine(texture, tempdst, trans, new Size(maxX - minX, maxY - minY));
 		synchronized (dst) {
 			tempdst.copyTo(dst.submat(dstRoi), mask);

@@ -17,7 +17,7 @@ import pers.season.vml.util.ImUtils;
 
 public class RegressorSet {
 	protected final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
-	protected ExecutorService threadPool = Executors.newCachedThreadPool();
+	protected ExecutorService threadPool = Executors.newFixedThreadPool(CORE_COUNTS);
 	public Mat[] patches;
 	public Size patchSize;
 	public Mat refShape;
@@ -42,7 +42,6 @@ public class RegressorSet {
 		return rs;
 	}
 
-	
 	public Mat track(Mat pic, Mat srcPts, Size searchSize) {
 
 		Mat R = getPtsAffineTrans(srcPts, refShape, pic.width() / 2, pic.height() / 2);
@@ -53,30 +52,29 @@ public class RegressorSet {
 		Imgproc.warpAffine(affPic, affPic, R, pic.size());
 
 		Semaphore sema = new Semaphore(0);
-		for (int threadIndex = 0; threadIndex < CORE_COUNTS; threadIndex++) {
-			final int curThreadIndex = threadIndex;
-			final Mat dstPtsFinal = dstPts;
+
+		final Mat finalDstPts = dstPts;
+
+		for (int i = 0; i < finalDstPts.rows() / 2; i++) {
+			final int index = i;
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
-					for (int i = 0; i < dstPtsFinal.rows() / 2; i++) {
-						if (i % CORE_COUNTS != curThreadIndex)
-							continue;
-						double px = dstPtsFinal.get(i * 2, 0)[0];
-						double py = dstPtsFinal.get(i * 2 + 1, 0)[0];
-						Mat response = predictArea(affPic, patches[i], new Point(px, py), patchSize, searchSize);
+					double px = finalDstPts.get(index * 2, 0)[0];
+					double py = finalDstPts.get(index * 2 + 1, 0)[0];
+					Mat response = predictArea(affPic, patches[index], new Point(px, py), patchSize, searchSize);
 
-						MinMaxLocResult mmr = Core.minMaxLoc(response);
+					MinMaxLocResult mmr = Core.minMaxLoc(response);
 
-						dstPtsFinal.put(i * 2, 0, mmr.maxLoc.x - response.width() / 2 + px);
-						dstPtsFinal.put(i * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 + py);
-					}
+					finalDstPts.put(index * 2, 0, mmr.maxLoc.x - response.width() / 2 + px);
+					finalDstPts.put(index * 2 + 1, 0, mmr.maxLoc.y - response.height() / 2 + py);
 					sema.release();
 				}
+
 			});
 		}
 		try {
-			sema.acquire(CORE_COUNTS);
+			sema.acquire(finalDstPts.rows() / 2);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
