@@ -16,8 +16,9 @@ import org.opencv.imgproc.Imgproc;
 import pers.season.vml.util.ImUtils;
 
 public class RegressorSet {
-	protected final int CORE_COUNTS = Runtime.getRuntime().availableProcessors();
-	protected ExecutorService threadPool = Executors.newFixedThreadPool(CORE_COUNTS);
+
+	protected static ExecutorService threadPool = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	public Mat[] patches;
 	public Size patchSize;
 	public Mat refShape;
