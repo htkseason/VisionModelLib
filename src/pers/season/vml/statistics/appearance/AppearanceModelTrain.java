@@ -1,5 +1,8 @@
 package pers.season.vml.statistics.appearance;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.swing.JFrame;
 
 import org.opencv.core.Core;
@@ -15,6 +18,8 @@ import pers.season.vml.util.ImUtils;
 import pers.season.vml.util.MuctData;
 
 public class AppearanceModelTrain {
+	protected static ExecutorService threadPool = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	public static void visualize(AppearanceModel am) {
 		visualize(am, am.Z_SIZE - 4);
 	}

@@ -29,8 +29,7 @@ public class TextureModel {
 	public Mat U, S, e;
 	public int X_SIZE, Z_SIZE;
 	public int resolutionX, resolutionY;
-	protected static ExecutorService threadPool = Executors
-			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	protected ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	protected TextureModel() {
 
@@ -131,7 +130,7 @@ public class TextureModel {
 		return result;
 	}
 
-	public static void AffineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
+	public void AffineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
 		Semaphore sema = new Semaphore(0);
 
 		for (int i = 0; i < delaunay.length; i++) {

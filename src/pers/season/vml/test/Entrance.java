@@ -53,10 +53,17 @@ public final class Entrance {
 	}
 
 	public static void visionModelDemo() {
+		//MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.no_ignore);
+		
+		
 		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
 		//ShapeModelTrain.visualize(sm,8);
+		
+		//TextureModelTrain.train("models/texturex/", 0.98, 20, 30, false);
 		TextureModel tm = TextureModel.load("models/texture/", "U", "X_mean", "Z_e", "meanShape", "delaunay");
 		//TextureModelTrain.visualize(tm,8);
+		
+		//AppearanceModelTrain.train(sm, tm, "models/appearancex/", 1.5, 0.98, false);
 		AppearanceModel am = AppearanceModel.load(sm, tm, "models/appearance/", "U", "Z_e", "shapeWeight");
 		AppearanceModelTrain.visualize(am);
 	}

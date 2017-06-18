@@ -94,12 +94,13 @@ public class TextureModelTrain {
 			ImUtils.showDelaunay(meanShape, delaunay, resolution_x, resolution_y);
 
 		// affine faces
+		TextureModel tm = new TextureModel();
 		Mat X = new Mat();
 		for (int i = 0; i < MuctData.getSize(); i++) {
 			Mat pic = MuctData.getGrayJpg(i);
 			pic.convertTo(pic, CvType.CV_32F);
 			Mat normFace = Mat.zeros(resolution_y, resolution_x, CvType.CV_32F);
-			TextureModel.AffineTexture(pic, MuctData.getPtsMat(i), normFace, meanShape, delaunay);
+			tm.AffineTexture(pic, MuctData.getPtsMat(i), normFace, meanShape, delaunay);
 			normFace = normFace.reshape(1, 1);
 			X.push_back(normFace);
 			if (i % 100 == 0 || i == MuctData.getSize() - 1)

@@ -47,6 +47,8 @@ public class Triangle {
 		maxX = maxX >= dst.width() ? dst.width() - 1 : maxX;
 		int maxY = (int) Math.max(Math.max(ny1, ny2), ny3) + offset;
 		maxY = maxY >= dst.height() ? dst.height() - 1 : maxY;
+		if (minY >= maxY || minX >= maxX)
+			return;
 
 		// calculate translation matrix
 		MatOfPoint2f srcPosition = new MatOfPoint2f(new Point(x1, y1), new Point(x2, y2), new Point(x3, y3));
@@ -56,7 +58,6 @@ public class Triangle {
 		Mat trans = Imgproc.getAffineTransform(srcPosition, dstPosition);
 
 		// create triangle mask
-
 		Mat mask = Mat.zeros(dstRoi.size(), CvType.CV_8U);
 		MatOfPoint temp_mop = new MatOfPoint(new Point(nx1 - minX, ny1 - minY), new Point(nx2 - minX, ny2 - minY),
 				new Point(nx3 - minX, ny3 - minY));
