@@ -1,5 +1,5 @@
 # VisionModelLib  
-This project implements ShapeModel, TextureModel, AppearanceModel, PatchRegressor and training tools for them.  
+This project implements ShapeModel, TextureModel, AppearanceModel, PatchModel and training tools for them.  
   
 ---  
   
@@ -18,7 +18,7 @@ __Example 1 : AAM-Fitting (Using Appearance-Model, Texture-Model and Shape-Model
 [github.com/htkseason/AAM-Fitting](https://github.com/htkseason/AAM-Fitting)  
 <img src="https://github.com/htkseason/AAM-Fitting/blob/master/demo.jpg" width="60%" alt="AAM-Fitting" />  
   
-__Example 2 : ASM-Tracking (Using Patch-Regressor and Shape-Model)__  
+__Example 2 : CLM-Tracking (Using Patch-Model and Shape-Model)__  
 [github.com/htkseason/ASM-Tracking](https://github.com/htkseason/ASM-Tracking)  
 <img src="https://github.com/htkseason/ASM-Tracking/blob/master/demo.jpg" width="60%" alt="ASM-Tracking" />  
   
