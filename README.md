@@ -19,8 +19,8 @@ __Example 1 : AAM-Fitting (Using Appearance-Model, Texture-Model and Shape-Model
 <img src="https://github.com/htkseason/AAM-Fitting/blob/master/demo.jpg" width="60%" alt="AAM-Fitting" />  
   
 __Example 2 : CLM-Tracking (Using Patch-Model and Shape-Model)__  
-[github.com/htkseason/ASM-Tracking](https://github.com/htkseason/ASM-Tracking)  
-<img src="https://github.com/htkseason/ASM-Tracking/blob/master/demo.jpg" width="60%" alt="ASM-Tracking" />  
+[github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
+<img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" />  
   
 __Example 3 : Face-Twisting (Using Shape-Model and triangle mesh)__  
 [github.com/htkseason/TwistFace](https://github.com/htkseason/TwistFace)  
