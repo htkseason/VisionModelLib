@@ -1,6 +1,5 @@
 package pers.season.vml.util;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,8 +25,18 @@ public class MuctData {
 	public final static int[] default_ignore = { 68, 69, 70, 71, 72, 73, 74, 75 };
 	public final static int[] futher_ignore = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 68, 69, 70, 71, 72,
 			73, 74, 75 };
+	public final static int[] max_ignore = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+			21, 22, 23, 24, 25, 26, 27, 28, 29, 30, /* 31, */ 32, 33, 34, 35, /* 36, */ 37, 38, 39, 40, 41, 42, 43, 44,
+			45, 46, 47, /* 48, */ 49, 50, 51, 52, 53, /* 54, */ 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66,
+			/* 67, */68, 69, 70, 71, 72, 73, 74, 75 };
+	public final static int[] all_ignore = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+			21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+			48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
+			75 };
+
 	private static List<String> fileNameLst;
 	private static List<float[]> ptsDataLst;
+
 	private static int sampleSize;
 
 	private static String jpgPath;
@@ -73,6 +82,7 @@ public class MuctData {
 
 			}
 			projectMirrorShape();
+
 			sampleSize = ptsDataLst.size();
 			System.out.println("muct database sample loaded. size = " + sampleSize);
 			in.close();
@@ -80,6 +90,10 @@ public class MuctData {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static String getFileName(int index) {
+		return fileNameLst.get(index);
 	}
 
 	public static Mat getJpg(int index) {
