@@ -133,9 +133,12 @@ public class TextureModel {
 
 	public static void AffineTexture(Mat srcpic, Mat srcpts, Mat dstpic, Mat dstpts, int[][] delaunay) {
 		Semaphore sema = new Semaphore(0);
-
+		if (dstpic.equals(srcpic))
+			srcpic = srcpic.clone();
 		for (int i = 0; i < delaunay.length; i++) {
 			final int index = i;
+			final Mat fSrcpic = srcpic;
+			final Mat fDstpic = dstpic;
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -159,10 +162,10 @@ public class TextureModel {
 					double nx3 = dstpts.get(x3i, 0)[0];
 					double ny3 = dstpts.get(y3i, 0)[0];
 
-					Triangle t = new Triangle(srcpic, x1, y1, x2, y2, x3, y3);
+					Triangle t = new Triangle(fSrcpic, x1, y1, x2, y2, x3, y3);
 					t.shift(nx1, ny1, nx2, ny2, nx3, ny3);
 
-					t.transTextureTo(dstpic);
+					t.transTextureTo(fDstpic);
 					sema.release();
 				}
 
