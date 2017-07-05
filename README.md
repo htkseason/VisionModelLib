@@ -16,7 +16,7 @@ The pre-trained models are face-shape-model, face-texture-model, an integrated f
   
 __Example 1 : AAM-Fitting (Using Appearance-Model, Texture-Model and Shape-Model)__  
 [github.com/htkseason/AAM-Fitting](https://github.com/htkseason/AAM-Fitting)  
-<img src="https://github.com/htkseason/AAM-Fitting/blob/master/demo.jpg" width="60%" alt="AAM-Fitting" />  
+<img src="https://github.com/htkseason/AAM-Fitting/blob/master/demos/demo2.jpg" width="75%"/>  
   
 __Example 2 : CLM-Tracking (Using Patch-Model and Shape-Model)__  
 [github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
