@@ -55,7 +55,6 @@ public class ImUtils {
 			win.getContentPane().add(lbl);
 			win.setSize((int) (img.width() * scale) + 17, (int) (img.height() * scale) + 40);
 			win.setVisible(true);
-			win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		} else {
 			Component c = win.getContentPane().getComponent(0);
 			if (c.getClass() != JLabel.class)
