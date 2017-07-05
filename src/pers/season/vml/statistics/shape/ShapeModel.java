@@ -71,6 +71,12 @@ public class ShapeModel {
 		return Math.sqrt(a * a + b * b);
 	}
 
+	public void setScale(Mat Z, double scale) {
+		double quotient = scale / getScale(Z);
+		Z.put(0, 0, Z.get(0, 0)[0] * quotient);
+		Z.put(1, 0, Z.get(1, 0)[0] * quotient);
+	}
+
 	public double getRadian(Mat Z) {
 		double scale = getScale(Z);
 		double cos = Z.get(0, 0)[0] / scale;
@@ -81,6 +87,12 @@ public class ShapeModel {
 			return sin > 0 ? Math.PI * 0.5 : Math.PI * 1.5;
 		double radian = Math.atan(sin / cos);
 		return cos > 0 ? radian : sin > 0 ? Math.PI + radian : -Math.PI + radian;
+	}
+
+	public void setRadian(Mat Z, double radian) {
+		double scale = getScale(Z);
+		Z.put(0, 0, scale * Math.cos(radian));
+		Z.put(1, 0, scale * Math.sin(radian));
 	}
 
 	public Mat getZfromX(Mat X) {
