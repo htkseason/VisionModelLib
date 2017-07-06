@@ -24,7 +24,7 @@ __Example 2 : CLM-Tracking__
   
 __Example 3 : Face-Twisting__  
 [github.com/htkseason/TwistFace](https://github.com/htkseason/TwistFace)  
-<img src="https://github.com/htkseason/TwistFace/blob/master/demos/demo.png" width="60%" alt="Face-Twisting" />  
+<img src="https://github.com/htkseason/TwistFace/blob/master/demos/demo2.png" width="60%" alt="Face-Twisting" />  
   
 ---  
   
