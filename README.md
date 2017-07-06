@@ -14,17 +14,17 @@ The pre-trained models are face-shape-model, face-texture-model, an integrated f
   
 ### Examples  
   
-__Example 1 : AAM-Fitting (Using Appearance-Model, Texture-Model and Shape-Model)__  
+__Example 1 : AAM-Fitting__  
 [github.com/htkseason/AAM-Fitting](https://github.com/htkseason/AAM-Fitting)  
 <img src="https://github.com/htkseason/AAM-Fitting/blob/master/demos/demo2.jpg" width="75%"/>  
   
-__Example 2 : CLM-Tracking (Using Patch-Model and Shape-Model)__  
+__Example 2 : CLM-Tracking__  
 [github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
 <img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" />  
   
-__Example 3 : Face-Twisting (Using Shape-Model and triangle mesh)__  
+__Example 3 : Face-Twisting__  
 [github.com/htkseason/TwistFace](https://github.com/htkseason/TwistFace)  
-<img src="https://github.com/htkseason/TwistFace/blob/master/demo.jpg" width="60%" alt="Face-Twisting" />  
+<img src="https://github.com/htkseason/TwistFace/blob/master/demos/demo.png" width="60%" alt="Face-Twisting" />  
   
 ---  
   
