@@ -22,6 +22,9 @@ __Example 2 : CLM-Tracking__
 [github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
 <img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" />  
   
+[github.com/htkseason/VmlFacial](https://github.com/htkseason/VmlFacial)  
+<img src="https://github.com/htkseason/VmlFacial/blob/master/demos/demo1.jpg" width="35%"/>  
+  
 __Example 3 : Face-Twisting__  
 [github.com/htkseason/TwistFace](https://github.com/htkseason/TwistFace)  
 <img src="https://github.com/htkseason/TwistFace/blob/master/demos/demo2.png" width="60%" alt="Face-Twisting" />  
@@ -30,5 +33,4 @@ __Example 3 : Face-Twisting__
   
 ### References  
 [Cootes and C.J.Taylor. Statistical Models of Appearance for Computer Vision. University of Manchester, March 2004](http://www.face-rec.org/algorithms/AAM/app_models.pdf)  
-  
 [github.com/MasteringOpenCV](https://github.com/MasteringOpenCV/code)  
