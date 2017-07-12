@@ -20,8 +20,10 @@ __Example 1 : AAM-Fitting__
   
 __Example 2 : CLM-Tracking__  
 [github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
-<img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" />  
+<img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" /> 
+<img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo-patch-visualization.png" width="75%" /> 
   
+__Face-Sticker-Camera__  
 [github.com/htkseason/VmlFacial](https://github.com/htkseason/VmlFacial)  
 <img src="https://github.com/htkseason/VmlFacial/blob/master/demos/demo1.jpg" width="35%"/>  
   
