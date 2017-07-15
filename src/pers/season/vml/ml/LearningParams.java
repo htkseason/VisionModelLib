@@ -1,4 +1,4 @@
-package pers.season.vml.statistics.regressor;
+package pers.season.vml.ml;
 
 public class LearningParams {
 	public double initLearningRate = 0.1;

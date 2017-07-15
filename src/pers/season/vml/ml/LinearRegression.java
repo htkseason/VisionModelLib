@@ -1,4 +1,4 @@
-package pers.season.vml.statistics.regressor;
+package pers.season.vml.ml;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

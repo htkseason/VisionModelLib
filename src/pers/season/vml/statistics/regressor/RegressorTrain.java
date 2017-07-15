@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
+import org.opencv.features2d.Feature2D;
+import org.opencv.features2d.Features2d;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -24,6 +26,8 @@ import org.opencv.ml.LogisticRegression;
 import org.opencv.ml.Ml;
 import org.opencv.ml.TrainData;
 
+import pers.season.vml.ml.LearningParams;
+import pers.season.vml.ml.LinearRegression;
 import pers.season.vml.statistics.shape.ShapeInstance;
 import pers.season.vml.statistics.shape.ShapeModel;
 import pers.season.vml.util.ImUtils;
