@@ -3,6 +3,7 @@ package pers.season.vml.statistics.shape;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
@@ -26,7 +27,7 @@ public class ShapeInstance {
 		Z.put(0, 0, 1);
 		Mat X = sm.getXfromZ(Z);
 		Core.normalize(X, X, -scale / 2, scale / 2, Core.NORM_MINMAX);
-		
+
 		// move to the mass center
 		Mat mx = Mat.zeros(1, 1, CvType.CV_32F);
 		Mat my = Mat.zeros(1, 1, CvType.CV_32F);
@@ -77,6 +78,14 @@ public class ShapeInstance {
 
 	public void setRadian(double radian) {
 		sm.setRadian(Z, radian);
+	}
+
+	public Point getOffset() {
+		return sm.getOffset(Z);
+	}
+
+	public void setOffset(Point offset) {
+		sm.setOffset(Z, offset);
 	}
 
 	public RotatedRect getLocation() {

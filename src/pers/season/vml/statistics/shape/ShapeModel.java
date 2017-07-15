@@ -95,6 +95,15 @@ public class ShapeModel {
 		Z.put(1, 0, scale * Math.sin(radian));
 	}
 
+	public Point getOffset(Mat Z) {
+		return new Point(Z.get(2, 0)[0] / transPerPixel, Z.get(3, 0)[0] / transPerPixel);
+	}
+
+	public void setOffset(Mat Z, Point offset) {
+		Z.put(2, 0, offset.x * transPerPixel);
+		Z.put(3, 0, offset.y * transPerPixel);
+	}
+
 	public Mat getZfromX(Mat X) {
 		Mat result = new Mat();
 		Core.gemm(V.t(), X, 1, new Mat(), 0, result);
