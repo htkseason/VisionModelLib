@@ -34,6 +34,7 @@ import org.opencv.imgproc.Imgproc;
 
 public class ImUtils {
 
+
 	public static void imshow(Mat img) {
 		imshow(img, 1f);
 	}
@@ -170,8 +171,6 @@ public class ImUtils {
 		}
 	}
 
-
-
 	public static void save8UMatAsBin(Mat mat, String file) {
 		try {
 			new File(file).getParentFile().mkdirs();
@@ -290,13 +289,13 @@ public class ImUtils {
 	}
 
 	public static byte[] get8UMatData(Mat mat) {
-		byte[] result = new byte[(int) mat.total()*mat.channels()];
+		byte[] result = new byte[(int) mat.total() * mat.channels()];
 		mat.get(0, 0, result);
 		return result;
 	}
 
 	public static float[] get32FMatData(Mat mat) {
-		float[] result = new float[(int) mat.total()*mat.channels()];
+		float[] result = new float[(int) mat.total() * mat.channels()];
 		mat.get(0, 0, result);
 		return result;
 	}

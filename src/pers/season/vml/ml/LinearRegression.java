@@ -24,7 +24,7 @@ public class LinearRegression {
 
 	}
 
-	public void setData(Mat sample, Mat response, double lambda) {
+	public void setData(Mat sample, Mat response, double lambda, boolean normalize) {
 		this.theta = Mat.zeros(sample.cols() + 1, 1, CvType.CV_32F);
 		this.X = Mat.ones(sample.rows(), sample.cols() + 1, CvType.CV_32F);
 		sample.copyTo(X.colRange(1, X.cols()));
@@ -32,7 +32,8 @@ public class LinearRegression {
 			response.convertTo(response, CvType.CV_32F);
 		this.y = response.clone();
 		this.lambda = lambda;
-		normalize();
+		if (normalize)
+			normalize();
 	}
 
 	private void normalize() {
@@ -81,9 +82,8 @@ public class LinearRegression {
 					int bottomBorder = (curThreadIndex + 1) * assignmentCounts;
 					if (curThreadIndex == CORE_COUNTS - 1)
 						bottomBorder = theta.rows();
-
+					Mat t = new Mat();
 					for (int i = curThreadIndex * assignmentCounts; i < bottomBorder; i++) {
-						Mat t = new Mat();
 						Core.multiply(comt, tX.col(i), t);
 						double sum = Core.sumElems(t).val[0];
 						if (i != 0)

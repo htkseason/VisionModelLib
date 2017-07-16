@@ -57,7 +57,7 @@ public class RegressorTrain {
 		System.out.println(sample.rows() + " samples loaded");
 
 		LinearRegression lr = new LinearRegression();
-		lr.setData(sample, response, 1);
+		lr.setData(sample, response, 1, true);
 
 		double preCost = Double.MAX_VALUE;
 		double delta = lp.initLearningRate;
