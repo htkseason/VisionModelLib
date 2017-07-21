@@ -1,4 +1,4 @@
-package pers.season.vml.statistics.regressor;
+package pers.season.vml.statistics.patch;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +15,7 @@ import org.opencv.imgproc.Imgproc;
 
 import pers.season.vml.util.ImUtils;
 
-public class RegressorSet {
+public class PatchSet {
 
 	protected static ExecutorService threadPool = Executors
 			.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -24,23 +24,23 @@ public class RegressorSet {
 	public Mat refShape;
 	public int PTS_COUNT;
 
-	public static RegressorSet load(String path, String patches_name, String refShape_name, Size patchSize) {
+	public static PatchSet load(String path, String patches_name, String refShape_name, Size patchSize) {
 		return load(ImUtils.loadMat(path + patches_name), ImUtils.loadMat(path + refShape_name), patchSize);
 	}
 
-	public static RegressorSet load(Mat patches, Mat refShape, Size patchSize) {
-		RegressorSet rs = new RegressorSet();
+	public static PatchSet load(Mat patches, Mat refShape, Size patchSize) {
+		PatchSet ps = new PatchSet();
 
-		rs.patches = new Mat[patches.cols()];
+		ps.patches = new Mat[patches.cols()];
 		for (int i = 0; i < patches.cols(); i++) {
-			rs.patches[i] = patches.col(i).rowRange(1, patches.rows()).clone().reshape(1, (int) patchSize.height);
+			ps.patches[i] = patches.col(i).rowRange(1, patches.rows()).clone().reshape(1, (int) patchSize.height);
 		}
-		rs.patchSize = patchSize.clone();
-		rs.refShape = refShape.clone();
-		rs.PTS_COUNT = patches.cols();
+		ps.patchSize = patchSize.clone();
+		ps.refShape = refShape.clone();
+		ps.PTS_COUNT = patches.cols();
 
-		System.out.println("RegressorSet inited. " + rs.PTS_COUNT + " points");
-		return rs;
+		System.out.println("PatchSet inited. " + ps.PTS_COUNT + " points");
+		return ps;
 	}
 
 	public Mat track(Mat pic, Mat srcPts, Size searchSize) {
@@ -111,7 +111,6 @@ public class RegressorSet {
 	}
 
 	public static Mat predictArea(Mat pic, Mat theta, Point center, Size patchSize, Size searchSize) {
-		// 21/20-->10
 		int searchHeightHalf = (int) searchSize.height / 2;
 		int searchWidthHalf = (int) searchSize.width / 2;
 		int patchHeightHalf = (int) patchSize.height / 2;

@@ -1,4 +1,4 @@
-package pers.season.vml.statistics.regressor;
+package pers.season.vml.statistics.patch;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -6,18 +6,18 @@ import org.opencv.core.Size;
 
 import pers.season.vml.util.ImUtils;
 
-public class RegressorSetInstance {
+public class PatchSetInstance {
 
 	protected Mat curPts;
-	protected RegressorSet rs;
+	protected PatchSet ps;
 
-	public RegressorSetInstance(RegressorSet rs) {
-		this.rs = rs;
-		this.curPts = Mat.zeros(rs.PTS_COUNT, 1, CvType.CV_32F);
+	public PatchSetInstance(PatchSet ps) {
+		this.ps = ps;
+		this.curPts = Mat.zeros(ps.PTS_COUNT, 1, CvType.CV_32F);
 	}
 
 	public Mat track(Mat pic, Size searchSize) {
-		Mat dstPts = rs.track(pic, curPts, searchSize);
+		Mat dstPts = ps.track(pic, curPts, searchSize);
 		curPts = dstPts.clone();
 		return dstPts;
 	}

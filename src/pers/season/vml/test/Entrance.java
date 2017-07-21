@@ -36,8 +36,8 @@ import pers.season.vml.ml.LearningParams;
 import pers.season.vml.statistics.appearance.AppearanceFitting;
 import pers.season.vml.statistics.appearance.AppearanceModel;
 import pers.season.vml.statistics.appearance.AppearanceModelTrain;
-import pers.season.vml.statistics.regressor.RegressorSet;
-import pers.season.vml.statistics.regressor.RegressorTrain;
+import pers.season.vml.statistics.patch.PatchSet;
+import pers.season.vml.statistics.patch.PatchTrain;
 import pers.season.vml.statistics.sdm.SdmHogDescriptor;
 import pers.season.vml.statistics.sdm.SdmModel;
 import pers.season.vml.statistics.sdm.SdmTrain;
@@ -63,7 +63,7 @@ public final class Entrance {
 	}
 
 	public static void visionModelDemo() {
-		 MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv",
+		 MuctData.init("d:/muct/jpg", "d:/muct/muct76-opencv.csv",
 		 MuctData.no_ignore);
 
 		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
@@ -78,8 +78,18 @@ public final class Entrance {
 		// AppearanceModelTrain.visualize(am);
 
 		FaceDetector fd = FaceDetector.load("models/haarcascade_frontalface_default.xml");
-		RegressorSet rs = RegressorSet.load("models/regressor/", "patch_76_size61", "refShape", new Size(61, 61));
+		PatchSet rs = PatchSet.load("models/patch/", "patch_76_61x61", "refShape", new Size(61, 61));
 		
-		SdmTrain.train(rs.refShape, new Size(32,32));
+		//SdmTrain.train(rs.refShape, new Size(24,24));
+		SdmModel sdm = SdmModel.load();
+		
+		Mat feature = SdmModel.computeFeature(MuctData.getGrayJpg(0), MuctData.getPtsMat(0), rs.refShape, new Size(24,24));
+		
+		
+		
+		Mat residual = SdmModel.calcResidual(feature, sdm.theta);
+		Core.absdiff(residual, new Scalar(0), residual);
+		System.out.println(Core.sumElems(residual).val[0]/residual.rows());
+		
 	}
 }

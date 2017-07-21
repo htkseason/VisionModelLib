@@ -1,4 +1,4 @@
-package pers.season.vml.statistics.regressor;
+package pers.season.vml.statistics.patch;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,21 @@ import pers.season.vml.statistics.shape.ShapeModel;
 import pers.season.vml.util.ImUtils;
 import pers.season.vml.util.MuctData;
 
-public class RegressorTrain {
+public class PatchTrain {
+
+	public static void train(String savePath, Size refShapeSize, Size patchSize) {
+		Mat refShape = PatchTrain.getRefShape((int) refShapeSize.width, (int) refShapeSize.height);
+		ImUtils.saveMat(refShape, savePath + "refShape");
+		Mat thetaSet = new Mat();
+		for (int i = 0; i < MuctData.getPtsCounts(); i++) {
+			System.out.println("training patch " + i + " ...");
+			Mat theta = PatchTrain.trainLinearModel(refShape, i, patchSize, new Size(21, 21), 3, 0.2,
+					new LearningParams());
+			thetaSet.push_back(theta.t());
+			System.gc();
+		}
+		ImUtils.saveMat(thetaSet.t(), savePath + "patch_" + MuctData.getPtsCounts() + "_" + patchSize.toString());
+	}
 
 	public static Mat trainLinearModel(Mat refShape, int point, Size patchSize, Size searchSize, int samplingGap,
 			double trainSampleProportion, LearningParams lp) {
@@ -102,12 +116,12 @@ public class RegressorTrain {
 			// Core.normalize(pic, pic,-1,1,Core.NORM_MINMAX);
 			int tpx = (int) MuctData.getPts(i)[point * 2];
 			int tpy = (int) MuctData.getPts(i)[point * 2 + 1];
-			Mat R = RegressorSet.getPtsAffineTrans(MuctData.getPtsMat(i), refShape, pic.width() / 2, pic.height() / 2);
+			Mat R = PatchSet.getPtsAffineTrans(MuctData.getPtsMat(i), refShape, pic.width() / 2, pic.height() / 2);
 			int px = (int) Math.round((tpx * R.get(0, 0)[0] + tpy * R.get(0, 1)[0] + R.get(0, 2)[0]));
 			int py = (int) Math.round((tpx * R.get(1, 0)[0] + tpy * R.get(1, 1)[0] + R.get(1, 2)[0]));
 			Imgproc.warpAffine(pic, pic, R, pic.size());
 
-			Mat r = RegressorSet.predictArea(pic, theta, new Point(px, py), patchSize, searchSize);
+			Mat r = PatchSet.predictArea(pic, theta, new Point(px, py), patchSize, searchSize);
 
 			if (showResponseImage) {
 				Core.normalize(r, r, 0, 255, Core.NORM_MINMAX);
@@ -143,14 +157,11 @@ public class RegressorTrain {
 				|| tpy + searchHeightHalf + patchHeightHalf >= pic.height())
 			return;
 
-		Mat R = RegressorSet.getPtsAffineTrans(MuctData.getPtsMat(sampleIndex), refShape, pic.width() / 2,
+		Mat R = PatchSet.getPtsAffineTrans(MuctData.getPtsMat(sampleIndex), refShape, pic.width() / 2,
 				pic.height() / 2);
 		int px = (int) Math.round((tpx * R.get(0, 0)[0] + tpy * R.get(0, 1)[0] + R.get(0, 2)[0]));
 		int py = (int) Math.round((tpx * R.get(1, 0)[0] + tpy * R.get(1, 1)[0] + R.get(1, 2)[0]));
 		Imgproc.warpAffine(pic, pic, R, pic.size());
-		// Core.normalize(pic, pic, 0, 255, Core.NORM_MINMAX);
-		// ImUtils.imshow(pic);
-
 		int posSize = 2;
 		for (int y = -posSize; y <= posSize; y++) {
 			for (int x = -posSize; x <= posSize; x++) {
