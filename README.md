@@ -18,18 +18,18 @@ __Example 1 : AAM-Fitting__
 [github.com/htkseason/AAM-Fitting](https://github.com/htkseason/AAM-Fitting)  
 <img src="https://github.com/htkseason/AAM-Fitting/blob/master/demos/demo2.jpg" width="75%"/>  
   
-__Example 2 : CLM-Tracking__  
+__Example 2 : CLM-Tracking / SDM__  
 [github.com/htkseason/CLM-Tracking](https://github.com/htkseason/ASM-Tracking)  
 <img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo.jpg" width="60%" alt="CLM-Tracking" /> 
 <img src="https://github.com/htkseason/CLM-Tracking/blob/master/demo-patch-visualization.png" width="75%" /> 
   
-__Face-Sticker-Camera__  
+__Example 3 : Apply to Android -- Face-Sticker-Camera__  
 [github.com/htkseason/VmlFacial](https://github.com/htkseason/VmlFacial)  
 <img src="https://github.com/htkseason/VmlFacial/blob/master/demos/demo1.jpg" width="35%"/>  
   
-__Example 3 : Face-Twisting/Alignment__  
-[github.com/htkseason/TwistFace](https://github.com/htkseason/TwistFace)  
-<img src="https://github.com/htkseason/TwistFace/blob/master/demos/demo2.png" width="60%" alt="Face-Twisting" />  
+__Example 4 : Archery Target Score__
+[github.com/htkseason/ArcheryTargetScore](https://github.com/htkseason/ArcheryTargetScore)  
+<img src="https://github.com/htkseason/ArcheryTargetScore/blob/master/demos/demo.jpg" width="60%"/>  
   
 ---  
   
