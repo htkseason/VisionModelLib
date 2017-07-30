@@ -42,12 +42,16 @@ public class FeatureTracker {
 		f2d.detectAndCompute(template, new Mat(), srcKp, srcDes);
 		System.out.println(srcKp.total() + " features learned.");
 	}
-
-	public Mat findHomo(Mat pic, boolean refine) {
-		return findHomo(pic, refine, true);
+	
+	public Mat findHomo(Mat pic, boolean refine, double goodMatchThreshold) {
+		return findHomo(pic, refine, goodMatchThreshold, true);
 	}
 
-	protected Mat findHomo(Mat pic, boolean refine, boolean isExternalCall) {
+	public Mat findHomo(Mat pic, boolean refine) {
+		return findHomo(pic, refine, 0.8, true);
+	}
+
+	protected Mat findHomo(Mat pic, boolean refine, double goodMatchThreshold, boolean isExternalCall) {
 
 		Mat dstDes = new Mat();
 		MatOfKeyPoint dstKp = new MatOfKeyPoint();
@@ -67,7 +71,7 @@ public class FeatureTracker {
 
 		for (int i = 0; i < matchesLst.size(); i++) {
 			DMatch[] dm = matchesLst.get(i).toArray();
-			if (dm[0].distance < 0.75 * dm[1].distance) {
+			if (dm[0].distance < goodMatchThreshold * dm[1].distance) {
 				Point p1 = dstKpArr[dm[0].queryIdx].pt;
 				Point p2 = srcKpArr[dm[0].trainIdx].pt;
 
@@ -107,7 +111,7 @@ public class FeatureTracker {
 			Mat warpedPic = new Mat();
 			Imgproc.warpPerspective(pic, warpedPic, homo, template.size(),
 					Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
-			Mat refinedHomo = findHomo(warpedPic, false, false);
+			Mat refinedHomo = findHomo(warpedPic, false, goodMatchThreshold, false);
 			if (refinedHomo == null)
 				return homo;
 			Mat result = new Mat();
