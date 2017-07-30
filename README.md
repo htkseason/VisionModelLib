@@ -28,7 +28,7 @@ __Example 3 : Apply to Android -- Face-Sticker-Camera__
 <img src="https://github.com/htkseason/VmlFacial/blob/master/demos/demo1.jpg" width="35%"/>  
   
 __Example 4 : Archery Target Score__
-[github.com/htkseason/ArcheryTargetScore](https://github.com/htkseason/ArcheryTargetScore)  
+[github.com/htkseason/Archery-Target-Score](https://github.com/htkseason/Archery-Target-Score)  
 <img src="https://github.com/htkseason/Archery-Target-Score/blob/master/demo.jpg" width="75%"/>  
   
   
