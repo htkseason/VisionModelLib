@@ -3,8 +3,8 @@ package pers.season.vml.util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.core.Core;
@@ -49,8 +49,8 @@ public class MuctData {
 		MuctData.ptsCounts = 76 - ignore.length;
 		MuctData.jpgPath = jpgPath;
 		try {
-			fileNameLst = new LinkedList<String>();
-			ptsDataLst = new LinkedList<float[]>();
+			fileNameLst = new ArrayList<String>();
+			ptsDataLst = new ArrayList<float[]>();
 			BufferedReader in = new BufferedReader(new FileReader(ptsFile));
 			in.readLine();// skip title
 			String line;
