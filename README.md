@@ -29,7 +29,8 @@ __Example 3 : Apply to Android -- Face-Sticker-Camera__
   
 __Example 4 : Archery Target Score__
 [github.com/htkseason/ArcheryTargetScore](https://github.com/htkseason/ArcheryTargetScore)  
-<img src="https://github.com/htkseason/ArcheryTargetScore/blob/master/demos/demo.jpg" width="60%"/>  
+<img src="https://github.com/htkseason/Archery-Target-Score/blob/master/demo.jpg" width="75%"/>  
+  
   
 ---  
   
