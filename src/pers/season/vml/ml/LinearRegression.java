@@ -48,6 +48,14 @@ public class LinearRegression {
 		}
 	}
 
+	public double getSampleCost() {
+		Mat cost = new Mat();
+		Core.gemm(X, theta, 1, new Mat(), 0, cost);
+		Core.subtract(cost, y, cost);
+		Core.gemm(cost.t(), cost, 1, new Mat(), 0, cost);
+		return Math.sqrt(cost.get(0, 0)[0] / X.rows());
+	}
+
 	public double getCost() {
 		Mat reg = new Mat();
 		Core.gemm(theta.t(), theta, 1, new Mat(), 0, reg);

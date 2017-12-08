@@ -28,9 +28,15 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.HOGDescriptor;
 import org.opencv.videoio.VideoCapture;
 
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
+import libsvm.svm_parameter;
+import libsvm.svm_problem;
 import pers.season.vml.ar.CameraData;
 import pers.season.vml.ar.Engine3D;
-import pers.season.vml.ar.FeatureTracker;
+import pers.season.vml.ar.MarkerDetector;
+import pers.season.vml.ar.TemplateDetector;
 import pers.season.vml.ar.MotionFilter;
 import pers.season.vml.ml.LearningParams;
 import pers.season.vml.statistics.appearance.AppearanceFitting;
@@ -58,13 +64,15 @@ public final class Entrance {
 	}
 
 	public static void main(String[] args) throws IOException {
-		visionModelDemo();
+		//visionModelDemo();
 
+		MarkerDetector md = new MarkerDetector();
+		md.findMarkers(Imgcodecs.imread("e:/test.png", Imgcodecs.IMREAD_GRAYSCALE));
+		
 	}
 
 	public static void visionModelDemo() {
-		 MuctData.init("d:/muct/jpg", "d:/muct/muct76-opencv.csv",
-		 MuctData.no_ignore);
+		MuctData.init("e:/muct/jpg", "e:/muct/muct76-opencv.csv", MuctData.no_ignore);
 
 		ShapeModel sm = ShapeModel.load("models/shape/", "V", "Z_e");
 		// ShapeModelTrain.visualize(sm,8);
@@ -77,19 +85,53 @@ public final class Entrance {
 		AppearanceModel am = AppearanceModel.load(sm, tm, "models/appearance/", "U", "Z_e", "shapeWeight");
 		// AppearanceModelTrain.visualize(am);
 
-		FaceDetector fd = FaceDetector.load("models/haarcascade_frontalface_default.xml");
-		PatchSet rs = PatchSet.load("models/patch/", "patch_76_61x61", "refShape", new Size(61, 61));
-		
-		//SdmTrain.train(rs.refShape, new Size(24,24));
-		SdmModel sdm = SdmModel.load();
-		
-		Mat feature = SdmModel.computeFeature(MuctData.getGrayJpg(0), MuctData.getPtsMat(0), rs.refShape, new Size(24,24));
-		
-		
-		
-		Mat residual = SdmModel.calcResidual(feature, sdm.theta);
-		Core.absdiff(residual, new Scalar(0), residual);
-		System.out.println(Core.sumElems(residual).val[0]/residual.rows());
-		
+		FaceDetector fd = FaceDetector.load("models/lbpcascade_frontalface.xml");
+		PatchSet ps = PatchSet.load("models/patch/", "patch_76_61x61", "refShape", new Size(61, 61));
+
+		SdmTrain.train(ps.refShape, new Size(32,32));
+		SdmModel sdm = SdmModel.load("models/sdm_500_0sample/");
+		VideoCapture vc = new VideoCapture();
+		vc.open(0);
+		JFrame win = new JFrame();
+		while (true) {
+			Mat pic = new Mat();
+			vc.read(pic);
+			pic = MuctData.getGrayJpg(555);
+			Rect[] faceRects = fd.searchFace(pic);
+			if (faceRects.length == 0)
+				continue;
+			Rect faceRect = faceRects[0];
+			ShapeInstance shape = new ShapeInstance(sm);
+
+			shape.setFromParams(faceRect.width * 0.9, 0, faceRect.x + faceRect.width / 2,
+					faceRect.y + faceRect.height / 2 + faceRect.height * 0.12);
+			Mat pts = shape.getX();
+			while (true) {
+				vc.read(pic);
+				pic = MuctData.getGrayJpg(555);
+				pts=shape.getX();
+				for (int iter = 0; iter <10; iter++) {
+
+					Mat R = PatchSet.getPtsAffineTrans(pts, ps.refShape, pic.width() / 2, pic.height() / 2);
+					Mat feature = SdmModel.computeFeature(pic, pts, ps.refShape, new Size(32, 32));
+					Mat residual = SdmModel.calcResidual(feature, sdm.theta);
+
+					//System.out.println(Core.norm(residual));
+
+					Core.multiply(residual, new Scalar(0.5), residual);
+					Mat ptsAff = PatchSet.warpPtsAffine(pts, R);
+					Core.add(ptsAff, residual, ptsAff);
+					pts = PatchSet.reversePtsAffine(ptsAff, R);
+				}
+
+				Mat vpic = pic.clone();
+				for (int i = 0; i < pts.rows() / 2; i++) {
+					Imgproc.circle(vpic, new Point(pts.get(i * 2, 0)[0], pts.get(i * 2 + 1, 0)[0]), 2, new Scalar(255),
+							2);
+				}
+				ImUtils.imshow(win, vpic, 1);
+			}
+		}
+
 	}
 }

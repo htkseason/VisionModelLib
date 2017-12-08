@@ -25,7 +25,7 @@ import org.opencv.imgproc.Imgproc;
 
 import pers.season.vml.util.ImUtils;
 
-public class FeatureTracker {
+public class TemplateDetector {
 	protected Feature2D f2d = AKAZE.create(AKAZE.DESCRIPTOR_KAZE, 0, 3, 0.001f, 4, 4, KAZE.DIFF_PM_G2);
 	protected DescriptorMatcher bfm = BFMatcher.create(Core.NORM_HAMMING);
 
