@@ -34,7 +34,6 @@ import org.opencv.imgproc.Imgproc;
 
 public class ImUtils {
 
-
 	public static void imshow(Mat img) {
 		imshow(img, 1f);
 	}
@@ -79,9 +78,12 @@ public class ImUtils {
 	}
 
 	public static BufferedImage encodeImage(Mat image, Size resize) {
-		Mat tImg = image.clone();
-		if (resize != null)
-			Imgproc.resize(tImg, tImg, resize);
+		Mat tImg;
+		if (resize != null) {
+			tImg = new Mat();
+			Imgproc.resize(image, tImg, resize);
+		} else
+			tImg = image.clone();
 
 		MatOfByte matOfByte = new MatOfByte();
 		Imgcodecs.imencode(".bmp", tImg, matOfByte);
