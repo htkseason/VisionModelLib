@@ -17,12 +17,13 @@ public final class MyMarker {
 	public final static int HEIGHT = 7;
 	public int code1 = 0;
 	public int code2 = 0;
-
+	public MatOfPoint2f pts;
+	
 	public MyMarker() {
 
 	}
 
-	public static MyMarker parse(Mat pic, MatOfPoint2f refMarkerPts) {
+	public static MyMarker parse(Mat pic, MatOfPoint2f markerPts) {
 
 		double threshold = 0.5;
 		int lengthPerBlock = 10;
@@ -31,7 +32,7 @@ public final class MyMarker {
 		Mat markerPic = new Mat();
 		Mat srcPts = new Mat(4, 1, CvType.CV_32FC2);
 		srcPts.put(0, 0, 0, 0, width, 0, width, height, 0, height);
-		Mat homo = Imgproc.getPerspectiveTransform(srcPts, refMarkerPts);
+		Mat homo = Imgproc.getPerspectiveTransform(srcPts, markerPts);
 		Imgproc.warpPerspective(pic, markerPic, homo, new Size(width, height),
 				Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
 		Imgproc.threshold(markerPic, markerPic, 0, 255, Imgproc.THRESH_OTSU);
@@ -62,27 +63,27 @@ public final class MyMarker {
 				+ (markerData.get(HEIGHT - 2, WIDTH - 2)[0] != 0 ? 1 : 0)
 				+ (markerData.get(HEIGHT - 2, 1)[0] != 0 ? 1 : 0) != 1)
 			return null;
-
+		ret.pts = new MatOfPoint2f(markerPts.clone());
 		if (markerData.get(1, WIDTH - 2)[0] != 0) {
 			Core.rotate(markerData, markerData, Core.ROTATE_90_COUNTERCLOCKWISE);
 			for (int p = 0; p < 3; p++) {
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row(p));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row((p + 1) % 4));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row((p + 1) % 4));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row(p));
 			}
 		} else if (markerData.get(HEIGHT - 2, WIDTH - 2)[0] != 0) {
 			Core.rotate(markerData, markerData, Core.ROTATE_180);
 			for (int p = 0; p < 2; p++) {
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 2) % 4), refMarkerPts.row(p));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 2) % 4), refMarkerPts.row((p + 2) % 4));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 2) % 4), refMarkerPts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 2) % 4), ret.pts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 2) % 4), ret.pts.row((p + 2) % 4));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 2) % 4), ret.pts.row(p));
 			}
 		} else if (markerData.get(HEIGHT - 2, 1)[0] != 0) {
 			Core.rotate(markerData, markerData, Core.ROTATE_90_CLOCKWISE);
 			for (int p = 3; p > 0; p--) {
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row(p));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row((p + 1) % 4));
-				Core.bitwise_xor(refMarkerPts.row(p), refMarkerPts.row((p + 1) % 4), refMarkerPts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row(p));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row((p + 1) % 4));
+				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row(p));
 			}
 		}
 
@@ -113,10 +114,9 @@ public final class MyMarker {
 			return null;
 		}
 
-		System.out.println(ret.code1 + ", " + ret.code2);
-
+		// System.out.println(ret.code1 + ", " + ret.code2);
 		// ImUtils.imshow(new JFrame(), markerData, 50);
-		ImUtils.imshow(new JFrame(), markerPic, 1);
+		// ImUtils.imshow(new JFrame(), markerPic, 1);
 		return ret;
 
 	}
