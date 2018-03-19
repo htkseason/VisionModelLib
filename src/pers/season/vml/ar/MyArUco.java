@@ -1,31 +1,27 @@
 package pers.season.vml.ar;
 
-import javax.swing.JFrame;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Size;
-import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 
 import pers.season.vml.util.ImUtils;
 
-public final class MyMarker {
+public final class MyArUco {
 	public final static int WIDTH = 7;
 	public final static int HEIGHT = 7;
 	public int code1 = 0;
 	public int code2 = 0;
 	public MatOfPoint2f pts;
-	
-	public MyMarker() {
+
+	public MyArUco() {
 
 	}
 
-	public static MyMarker parse(Mat pic, MatOfPoint2f markerPts) {
+	public static MyArUco parse(Mat pic, MatOfPoint2f markerPts) {
 
-		double threshold = 0.5;
 		int lengthPerBlock = 10;
 		int width = (int) WIDTH * lengthPerBlock;
 		int height = (int) HEIGHT * lengthPerBlock;
@@ -36,26 +32,22 @@ public final class MyMarker {
 		Imgproc.warpPerspective(pic, markerPic, homo, new Size(width, height),
 				Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
 		Imgproc.threshold(markerPic, markerPic, 0, 255, Imgproc.THRESH_OTSU);
-
+		ImUtils.imshow(markerPic);
 		Mat markerData = new Mat(HEIGHT, WIDTH, CvType.CV_8U);
 		for (int y = 0; y < HEIGHT; y++)
 			for (int x = 0; x < WIDTH; x++) {
 				int nonZeroPixels = Core.countNonZero(markerPic.submat(y * lengthPerBlock, (y + 1) * lengthPerBlock,
 						x * lengthPerBlock, (x + 1) * lengthPerBlock));
-				markerData.put(y, x, nonZeroPixels > lengthPerBlock * lengthPerBlock * threshold ? 255 : 0);
+				markerData.put(y, x, nonZeroPixels > lengthPerBlock * lengthPerBlock * 0.5 ? 255 : 0);
 			}
 
 		if (markerData.width() != WIDTH || markerData.height() != HEIGHT)
 			return null;
 
-		MyMarker ret = new MyMarker();
+		MyArUco ret = new MyArUco();
 		// check surrounding blocks
 		if (Core.countNonZero(markerData.row(0)) != 0 || Core.countNonZero(markerData.row(HEIGHT - 1)) != 0
 				|| Core.countNonZero(markerData.col(0)) != 0 || Core.countNonZero(markerData.col(WIDTH - 1)) != 0)
-			return null;
-
-		// check center
-		if (markerData.get(HEIGHT / 2, WIDTH / 2)[0] == 0)
 			return null;
 
 		// check corner and adjust rotation
@@ -88,35 +80,38 @@ public final class MyMarker {
 		}
 
 		// get data
-		ret.code1 += (markerData.get(2, 2)[0] == 0 ? 0 : 1) << 0;
+		ret.code1 += (markerData.get(1, 2)[0] == 0 ? 0 : 1) << 7;
+		ret.code1 += (markerData.get(1, 3)[0] == 0 ? 0 : 1) << 6;
+		ret.code1 += (markerData.get(1, 4)[0] == 0 ? 0 : 1) << 5;
+		ret.code1 += (markerData.get(2, 1)[0] == 0 ? 0 : 1) << 4;
+		ret.code1 += (markerData.get(2, 2)[0] == 0 ? 0 : 1) << 3;
+		ret.code1 += (markerData.get(2, 3)[0] == 0 ? 0 : 1) << 2;
 		ret.code1 += (markerData.get(2, 4)[0] == 0 ? 0 : 1) << 1;
-		ret.code1 += (markerData.get(4, 4)[0] == 0 ? 0 : 1) << 2;
-		ret.code1 += (markerData.get(4, 2)[0] == 0 ? 0 : 1) << 3;
+		ret.code1 += (markerData.get(2, 5)[0] == 0 ? 0 : 1) << 0;
 
-		ret.code2 += (markerData.get(2, 3)[0] == 0 ? 0 : 1) << 0;
-		ret.code2 += (markerData.get(3, 4)[0] == 0 ? 0 : 1) << 1;
-		ret.code2 += (markerData.get(4, 3)[0] == 0 ? 0 : 1) << 2;
-		ret.code2 += (markerData.get(3, 2)[0] == 0 ? 0 : 1) << 3;
+		ret.code2 += (markerData.get(4, 1)[0] == 0 ? 0 : 1) << 7;
+		ret.code2 += (markerData.get(4, 2)[0] == 0 ? 0 : 1) << 6;
+		ret.code2 += (markerData.get(4, 3)[0] == 0 ? 0 : 1) << 5;
+		ret.code2 += (markerData.get(4, 4)[0] == 0 ? 0 : 1) << 4;
+		ret.code2 += (markerData.get(4, 5)[0] == 0 ? 0 : 1) << 3;
+		ret.code2 += (markerData.get(5, 2)[0] == 0 ? 0 : 1) << 2;
+		ret.code2 += (markerData.get(5, 3)[0] == 0 ? 0 : 1) << 1;
+		ret.code2 += (markerData.get(5, 4)[0] == 0 ? 0 : 1) << 0;
 
-		// check parity
-		if ((markerData.get(1, 2)[0] != 0 && (ret.code1 >> 1 ^ ret.code2 >> 0) == 0)
-				|| (markerData.get(1, 3)[0] != 0 && (ret.code1 >> 0 ^ ret.code1 >> 1) == 0)
-				|| (markerData.get(1, 4)[0] != 0 && (ret.code1 >> 0 ^ ret.code2 >> 0) == 0)
-				|| (markerData.get(2, 5)[0] != 0 && (ret.code1 >> 2 ^ ret.code2 >> 1) == 0)
-				|| (markerData.get(3, 5)[0] != 0 && (ret.code1 >> 1 ^ ret.code1 >> 2) == 0)
-				|| (markerData.get(4, 5)[0] != 0 && (ret.code1 >> 1 ^ ret.code2 >> 1) == 0)
-				|| (markerData.get(5, 4)[0] != 0 && (ret.code1 >> 3 ^ ret.code2 >> 2) == 0)
-				|| (markerData.get(5, 3)[0] != 0 && (ret.code1 >> 2 ^ ret.code1 >> 3) == 0)
-				|| (markerData.get(5, 2)[0] != 0 && (ret.code1 >> 2 ^ ret.code2 >> 2) == 0)
-				|| (markerData.get(4, 1)[0] != 0 && (ret.code1 >> 0 ^ ret.code2 >> 3) == 0)
-				|| (markerData.get(3, 1)[0] != 0 && (ret.code1 >> 3 ^ ret.code1 >> 0) == 0)
-				|| (markerData.get(2, 1)[0] != 0 && (ret.code1 >> 3 ^ ret.code2 >> 3) == 0)) {
+		// check parity and checksum
+		int parity1 = 0, parity2 = 0;
+		for (int b = 0; b < 8; b++) {
+			parity1 ^= ret.code1 >> b & 1;
+			parity2 ^= ret.code2 >> b & 1;
+		}
+		int sum = (ret.code1 + ret.code2) & 7;
+		int checksum = ((markerData.get(3, 3)[0] == 0 ? 0 : 1) << 2) + ((markerData.get(3, 4)[0] == 0 ? 0 : 1) << 1)
+				+ ((markerData.get(3, 5)[0] == 0 ? 0 : 1) << 0);
+		if (((markerData.get(3, 1)[0] == 0 ? 0 : 1) != parity1) || ((markerData.get(3, 2)[0] == 0 ? 0 : 1) != parity2)
+				|| (checksum != sum)) {
 			return null;
 		}
 
-		// System.out.println(ret.code1 + ", " + ret.code2);
-		// ImUtils.imshow(new JFrame(), markerData, 50);
-		// ImUtils.imshow(new JFrame(), markerPic, 1);
 		return ret;
 
 	}
