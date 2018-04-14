@@ -33,6 +33,7 @@ public class TemplateDetector {
 	protected MatOfKeyPoint srcKp;
 	protected Mat srcDes;
 	protected MatOfPoint2f matchedDstPoints;
+	protected MatOfPoint2f matchedSrcPoints;
 	protected final static int MIN_QUERY_KPS = 8;
 
 	public void setTemplate(Mat template) {
@@ -42,7 +43,7 @@ public class TemplateDetector {
 		f2d.detectAndCompute(template, new Mat(), srcKp, srcDes);
 		System.out.println(srcKp.total() + " features learned.");
 	}
-	
+
 	public Mat findHomo(Mat pic, boolean refine, double goodMatchThreshold) {
 		return findHomo(pic, refine, goodMatchThreshold, true);
 	}
@@ -90,21 +91,25 @@ public class TemplateDetector {
 		if (homo.empty())
 			return null;
 
-		int inliersCount = (int) Core.sumElems(mask).val[0];
+		int inliersCount = (int) Core.countNonZero(mask);
 		if (inliersCount < MIN_QUERY_KPS)
 			return null;
 
 		if (isExternalCall) {
 			int index = 0;
 			Point[] matchedDstPointsArr = new Point[inliersCount];
+			Point[] matchedSrcPointsArr = new Point[inliersCount];
+			Point[] gdp = goodDstPoints.toArray();
+			Point[] gsp = goodSrcPoints.toArray();
 			for (int i = 0; i < mask.total(); i++) {
 				if (mask.get(i, 0)[0] != 0) {
-					// Imgproc.circle(pic, goodDstPoints.toArray()[i], 2, new
-					// Scalar(0, 255, 0), 2);
-					matchedDstPointsArr[index++] = goodDstPoints.toArray()[i];
+					matchedDstPointsArr[index] = gdp[i];
+					matchedSrcPointsArr[index] = gsp[i];
+					index++;
 				}
 			}
 			matchedDstPoints = new MatOfPoint2f(matchedDstPointsArr);
+			matchedSrcPoints = new MatOfPoint2f(matchedSrcPointsArr);
 		}
 
 		if (refine) {
@@ -125,13 +130,14 @@ public class TemplateDetector {
 	public MatOfPoint2f getMatchedDstPoints() {
 		return matchedDstPoints;
 	}
-
+	public MatOfPoint2f getMatchedSrcPoints() {
+		return matchedSrcPoints;
+	}
 	public void solvePnp(Mat homo, Mat camMat, Mat rvec, Mat tvec) {
 		MatOfPoint3f srcPts = new MatOfPoint3f(new Point3(0, 0, 0), new Point3(template.width(), 0, 0),
 				new Point3(template.width(), template.height(), 0), new Point3(0, template.height(), 0));
 		MatOfPoint2f dstPts = new MatOfPoint2f(getQuadFromHomo(homo));
 		Calib3d.solvePnP(srcPts, dstPts, camMat, new MatOfDouble(), rvec, tvec);
-
 		rvec.convertTo(rvec, CvType.CV_32F);
 		tvec.convertTo(tvec, CvType.CV_32F);
 

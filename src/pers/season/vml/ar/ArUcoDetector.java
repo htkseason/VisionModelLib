@@ -8,15 +8,23 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
+
+import pers.season.vml.util.ImUtils;
 
 public class ArUcoDetector {
 	public double perimeterThreshold;
 	public double areaThreshold;
 	public int refineWinSizeDivisor;
 
+	public ArUcoDetector(double perimeterThreshold, double areaThreshold) {
+		this.perimeterThreshold = perimeterThreshold;
+		this.areaThreshold = areaThreshold;
+		this.refineWinSizeDivisor = 10;
+	}
 	public ArUcoDetector(double perimeterThreshold, double areaThreshold, int refineWinSizeDivisor) {
 		this.perimeterThreshold = perimeterThreshold;
 		this.areaThreshold = areaThreshold;
@@ -27,13 +35,14 @@ public class ArUcoDetector {
 		Mat otsuPic = new Mat();
 		List<MatOfPoint2f> ret = new ArrayList<MatOfPoint2f>();
 		Imgproc.threshold(pic, otsuPic, 0, 255, Imgproc.THRESH_OTSU);
-
+//Mat show = Mat.zeros(otsuPic.size(), otsuPic.type());
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-
+		Mat cont = Mat.zeros(otsuPic.size(), otsuPic.type());
 		Imgproc.findContours(otsuPic, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_NONE);
 		for (int i = 0; i < contours.size(); i++) {
 			if (contours.get(i).rows() < perimeterThreshold)
 				continue;
+			Imgproc.drawContours(cont, contours, i, new Scalar(255));
 			MatOfPoint2f contour = new MatOfPoint2f();
 			MatOfPoint2f curve = new MatOfPoint2f();
 			contours.get(i).convertTo(contour, CvType.CV_32F);
@@ -51,12 +60,14 @@ public class ArUcoDetector {
 				Imgproc.cornerSubPix(pic, curve, new Size(winSize, winSize), new Size(-1, -1),
 						new TermCriteria(TermCriteria.MAX_ITER, 30, 0.1));
 			}
-
+//Imgproc.drawContours(show, contours, i, new Scalar(255));
 			ret.add(curve);
 		}
-
+//ImUtils.imshow(show);
 		return ret;
 	}
+	
+
 
 	protected void clockwiseMarker(Mat marker) {
 		Mat v1 = new Mat(), v2 = new Mat();

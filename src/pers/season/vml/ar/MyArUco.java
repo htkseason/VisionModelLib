@@ -14,6 +14,7 @@ public final class MyArUco {
 	public final static int HEIGHT = 7;
 	public int code1 = 0;
 	public int code2 = 0;
+	public static double whitePriority = 0.6;
 	public MatOfPoint2f pts;
 
 	public MyArUco() {
@@ -32,13 +33,13 @@ public final class MyArUco {
 		Imgproc.warpPerspective(pic, markerPic, homo, new Size(width, height),
 				Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
 		Imgproc.threshold(markerPic, markerPic, 0, 255, Imgproc.THRESH_OTSU);
-		ImUtils.imshow(markerPic);
+
 		Mat markerData = new Mat(HEIGHT, WIDTH, CvType.CV_8U);
 		for (int y = 0; y < HEIGHT; y++)
 			for (int x = 0; x < WIDTH; x++) {
 				int nonZeroPixels = Core.countNonZero(markerPic.submat(y * lengthPerBlock, (y + 1) * lengthPerBlock,
 						x * lengthPerBlock, (x + 1) * lengthPerBlock));
-				markerData.put(y, x, nonZeroPixels > lengthPerBlock * lengthPerBlock * 0.5 ? 255 : 0);
+				markerData.put(y, x, nonZeroPixels > lengthPerBlock * lengthPerBlock * whitePriority ? 255 : 0);
 			}
 
 		if (markerData.width() != WIDTH || markerData.height() != HEIGHT)
@@ -78,7 +79,7 @@ public final class MyArUco {
 				Core.bitwise_xor(ret.pts.row(p), ret.pts.row((p + 1) % 4), ret.pts.row(p));
 			}
 		}
-
+		//ImUtils.imshow(markerPic);
 		// get data
 		ret.code1 += (markerData.get(1, 2)[0] == 0 ? 0 : 1) << 7;
 		ret.code1 += (markerData.get(1, 3)[0] == 0 ? 0 : 1) << 6;
@@ -109,7 +110,8 @@ public final class MyArUco {
 				+ ((markerData.get(3, 5)[0] == 0 ? 0 : 1) << 0);
 		if (((markerData.get(3, 1)[0] == 0 ? 0 : 1) != parity1) || ((markerData.get(3, 2)[0] == 0 ? 0 : 1) != parity2)
 				|| (checksum != sum)) {
-			return null;
+			System.out.println("checksum/parity error with " + ret.code1 + "," + ret.code2);
+			// return null;
 		}
 
 		return ret;
